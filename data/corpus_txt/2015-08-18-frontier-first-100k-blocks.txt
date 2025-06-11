@@ -1,0 +1,21 @@
+Titre: An Analysis of the First 100000 Blocks\nAuteur: Gustav Simonsson\nDate: on August 18, 2015\nURL: https://blog.ethereum.org/2015/08/18/frontier-first-100k-blocks\nCatégorie: Non catégorisé\n\n==================================================\n\nfter a successful launch, rontier passed it's th block earlier this week. ere are some interesting stats from these first blocks.nnhe first  block times (in seconds)nnight after genesis, it took  seconds for the second block to appear, then  and  seconds for the net couple of blocks. ot too surprising as the miners scrambled with their setups as the final genesis block became known.nnfter these first blocks, we see the block time drop significantly at the onslaught of larger miners, flooring at  second that is the limit enforced by the consensus protocol.nnet's now look at the average block time (every th block from genesis to block )nne can see the hashing power really attacking the network after the first few hundred blocks, with block times at - seconds as the difficulty adjustment algorithm is catching up. his algorithm either increases or decreases the difficulty by diff/ each block, depending on the block time.nnfter a few thousand blocks, we see the difficulty going up enough for block times to get into the - second range. fter k blocks, we're starting to approach the target time of  seconds.nniggest miners in first k blocks (address, blocks, %) nnefeddfecadece    .%
+baceeededbfbacc    .%
+cedbfcddbec    .%
+bbbabdabcdeecbaad   .%
+beeefbdcfe   .%
+fdaffcbcbdcc   .%
+ffceeadcedc   .%
+bbacfbecaeccaddc   .%
+ebcddeadacfbfb   .%
+bcbedefcbadebba   .%
+aecdfaefbaeefcaab   .%
+fecaedbdbbedcfecfa   .%
+ceefbdfffaacbbd   .%
+dafcfbefbafbbda   .%
+bbbffaaeaecbca   .%
+facbfecaffabab   .%
+eaadffbaeaccbdbca  .%nnhile one can never know for sure whether a single miner uses multiple coinbase addresses, assuming they use a single one, we have a pretty even distribution of hash power over the first k blocks. eaadffbaeaccbdbca with % of hashing power isnnethpoolnn, the first mining pool for thereum. et we have two large miners with around %. fter these three the distribution is quite even, with most miners having less than % of total hashing power.nnowever, things develop rapidly in the thereum world and if we look at the last k blocks we seennbeeefbdcfe   .%
+bbbffaaeaecbca   .%
+facbfecaffabab   .%
+baceeededbfbacc   .%
+eaadffbaeaccbdbca  .%nnere it's clear ethpool is currently having almost % of the hashing power, and the nd and rd biggest miners are down to %nnlocks in a rownnnother interesting stat is to look at continuous sets of blocks from the same miner. his can give some insight into how hashing power and latency is coming into play for larger miners.nnarly after launch, most blocks in a row we saw was , for eample blocks , , , ,  and  mined by dfcbbebbdff.nnbbbffaaeaecbca also mined  blocks a few times, for eample blocks , , , ,  and .nnhis miner also mined , ,  and  blocks in a row on a number of occasions, not too surprising with % of the total hashing power at the time.nnhis happened very early after launch when difficulty was rapidly increasing and many miners had not yet joined the network. s hashing power evened out after block  we did not see more than  blocks in a row for some time.nnowever, recently the most blocks in a row is , for eample blocks , , , , , , , , ,  by ethpool. cluding ethpool, no miner has had more than  blocks in a row.nntay tuned for more statistics from the rontier network as we observe it over the net months!nnustav imonssonnnis a developer in the thereum ecurity and o teams.
