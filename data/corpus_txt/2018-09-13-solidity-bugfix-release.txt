@@ -1,0 +1,23 @@
+Titre: Solidity Bugfix Release\nAuteur: Solidity Team\nDate: September 13, 2018\nURL: https://blog.ethereum.org/2018/09/13/solidity-bugfix-release\nCatégorie: Non catégorisé\n\n==================================================\n\nhe latestnnversion .. release of oliditynnfies
+two important bugs.
+nother important bug has already been fied in version .. but it was only discovered recently that the bug eisted.nnote that the thereum oundation runs annbounty programnnfor the code generator part of olidity.nnleanup of ponent in ponentiationnnikelihood of occurrence very lownnploitability highnniscoverability by tests lownnied in version ..nnummary sing short types in the eponent of an eponentiation operation can lead to invalid results.nnhe olidity language allows integer types that are shorter than  bits, even though the thereum irtual achine
+only knows types of eactly  bits. ecause of that, higher order bits need to be set to zero from time to time.
+or many operations, it is not relevant whether those bits are set to zero or not (addition is one eample).
+ecause of that, the olidity compiler delays this cleanup until it is needed in order to save gas.nnn the very special circumstance that the eponent of thenn**nnoperator has a type that is shorter
+than  bits, but not shorter than the type of the base and contains dirty higher order bits,
+this can lead to an incorrect result. ote that literal eponents like innn ** nnas well as
+the case where the type of the base isnnuintnnornnintnnare unaffected.nnote that a function parameter can have dirty higher order bits if called by a malicious entity,
+and the same is true for data returned from functions of contracts deployed by malicious entities.nnfter having screened a large number of contracts, we deem this bug to affect only a very tiny number of
+smart contracts, if any at all, because the regular uses of the eponentiation operator do not lead to the bug.nnhis bug was found bynnnwellernn.nnemory orruption in ulti-imensional rray ecodernnikelihood of occurrence lownnploitability mediumnniscoverability by tests highnnntroduced in version ..nnied in version ..nnummary alling functions of other contracts that return multi-dimensional fied-size arrays results in memory corruption.nnf olidity code calls a function that returns a multi-dimensional fied-size array,
+the returned -encoded data has to be converted to olidity's internal representation
+of arrays. n olidity, multi-dimensional arrays are implemented as arrays of
+memory pointers, while in the , the data is encoded inline.
+he decoder did not take this difference into account with the result that the returned
+elements are interpreted as memory pointers and thus can cause memory
+corruption if the return values are accessed. alling functions with multi-dimensional
+fied-size array arguments is unaffected as is returning fied-size arrays from function calls
+if they are not used in a olidity contract.
+he bug is only in the component that decodes a multi-dimensional fied-size array
+that is returned from a function call from olidity.nnhis bug was found bynnjmahhhnn.nnnvalid ncoding of tructs in ventsnnikelihood of occurrence lownnploitability lownniscoverability by tests highnnntroduced in version ..nnied in version ..nnummary tructs as event parameters are not handled properly.nntructs were not meant to be supported as event parameters without the new  encoder.
+he compiler did accept them nevertheless, but encoded their memory address instead of their actual value.
+ven with the new  encoder, structs cannot bennindeednnevent parameters.nnow, structs are properly disallowed for the old encoder and if they are indeed also for the new encoder.
