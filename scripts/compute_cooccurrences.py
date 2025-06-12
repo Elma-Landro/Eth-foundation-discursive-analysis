@@ -32,11 +32,12 @@ def clean_text_advanced(text):
 
 STOPWORDS_MINIMAL = set([
     'the', 'and', 'of', 'to', 'in', 'for', 'is', 'on', 'that', 'with', 'as',
-    'by', 'it', 'are', 'at', 'from', 'an', 'be', 'or', 'we', 'can', 'not',
-    'have', 'has', 'our', 'also', 'more', 'which', 'their', 'will', 'all',
-    'but', 'was', 'they', 'these', 'may', 'you', 'been', 'using', 'its',
+    'by', 'it', 'are', 'at', 'from', 'an', 'be', 'or', 'we', 'can',
+    'have', 'has', 'our', 'also', 'which', 'their', 'will', 'all',
+    'but', 'was', 'they', 'these', 'may', 'you', 'been', 'its',
     'if', 'do', 'does', 'did', 'because', 'however', 'therefore', 'thus',
-    'when', 'then', 'now', 'always', 'never', 'this', 'a'
+    'when', 'then', 'now', 'always', 'never', 'this', 'a',
+    'very', 'most', 'some', 'many', 'such', 'would', 'could', 'should'
 ])
 
 # --- TOKENIZER ---
