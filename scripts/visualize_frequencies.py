@@ -1,32 +1,44 @@
-
 import pandas as pd
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
+import os
 
-# Chargement du fichier de fréquences
-df = pd.read_csv('./outputs/word_frequencies.csv')
+# --- SETUP ---
 
-# Top N mots les plus fréquents
-N = 30
+INPUT_FILE = './outputs/word_frequencies.csv'
+OUTPUT_DIR = './outputs/'
+
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+# --- LOAD DATA ---
+
+df = pd.read_csv(INPUT_FILE)
+
+# --- BAR CHART ---
+
+N = 30  # Nombre de mots à visualiser
+
 top_words = df.head(N)
 
 plt.figure(figsize=(12, 6))
 plt.bar(top_words['word'], top_words['frequency'], color='skyblue')
 plt.xticks(rotation=45, ha='right')
-plt.title(f'Top {N} mots les plus fréquents')
+plt.title(f'Top {N} most frequent words (STS filtered)')
 plt.tight_layout()
-plt.savefig('./outputs/top_words_bar_chart.png')
+plt.savefig(os.path.join(OUTPUT_DIR, 'top_words_bar_chart.png'))
 plt.close()
 
-# Génération du wordcloud complet
+# --- WORD CLOUD ---
+
 word_freq = dict(zip(df['word'], df['frequency']))
+
 wordcloud = WordCloud(width=1600, height=800, background_color='white').generate_from_frequencies(word_freq)
 
 plt.figure(figsize=(16, 8))
 plt.imshow(wordcloud, interpolation='bilinear')
 plt.axis('off')
-plt.title('Nuage de mots complet')
-plt.savefig('./outputs/wordcloud.png')
+plt.title('Word Cloud (STS filtered)')
+plt.savefig(os.path.join(OUTPUT_DIR, 'wordcloud.png'))
 plt.close()
 
-print("Visualisations générées : voir outputs/")
+print("Visualizations generated successfully.")
