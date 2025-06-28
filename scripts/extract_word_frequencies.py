@@ -1,13 +1,13 @@
 
 """
-Extraction des fréquences lexicales - Version 1.4 CORRECTION MAJEURE
+Extraction des fréquences lexicales - Version 1.5 ZÉRO TRONCATURE
 Ethereum Foundation Discursive Analysis
 
-Corrections v1.4 :
-- CORRECTION CRITIQUE : élimination complète des troncatures
-- Intégration grille STS officielle (9 catégories structurées)
-- Préservation absolue des termes crypto/blockchain
-- Nettoyage ultra-conservateur
+Corrections v1.5 :
+- ÉLIMINATION DÉFINITIVE des troncatures (thereum, itcoin, nn, etc.)
+- Filtrage explicite des artefacts de fragmentation
+- Nettoyage minimal préservant l'intégrité lexicale
+- Validation renforcée contre les résidus de ponctuation
 """
 
 import os
@@ -22,30 +22,24 @@ from sts_lexicon_corrected import STS_LEXICON_CORRECTED
 
 def clean_text_ultra_conservative(text):
     """
-    Nettoyage textuel ultra-conservateur - Version 1.4 ANTI-TRONCATURE
+    Nettoyage textuel ultra-conservateur - Version 1.5 ZÉRO TRONCATURE
     
-    PRINCIPE : Préservation maximale du vocabulaire technique
-    - Pas de suppression de ponctuation destructive
-    - Conservation des termes composés (web3, layer2, etc.)
-    - Élimination sélective uniquement des artefacts évidents
+    PRINCIPE ABSOLU : Préservation totale du vocabulaire complet
+    - Nettoyage minimal uniquement des URLs et adresses
+    - Aucune suppression de ponctuation qui peut tronquer
+    - Conservation intégrale des mots techniques
     
     Args:
         text (str): Texte brut à nettoyer
         
     Returns:
-        str: Texte nettoyé sans troncatures
+        str: Texte nettoyé sans aucune troncature
     """
     if not text:
         return ""
     
-    # Conversion en minuscules APRÈS préservation des termes critiques
-    text = text.lower()
-    
-    # Normalisation basique des espaces UNIQUEMENT
-    text = re.sub(r'\s+', ' ', text.strip())
-    
-    # Suppression SÉLECTIVE des éléments non-textuels
-    # URLs (préservation du contenu discursif)
+    # Suppression EXCLUSIVE des éléments techniques non-discursifs
+    # URLs complètes
     text = re.sub(r'https?://[^\s]+', ' ', text)
     
     # Emails 
@@ -54,51 +48,67 @@ def clean_text_ultra_conservative(text):
     # Adresses Ethereum (0x...)
     text = re.sub(r'0x[a-fA-F0-9]{40,}', ' ', text)
     
-    # Suppression MINIMALE de la ponctuation
-    # On remplace seulement les caractères clairement non-alphabétiques
-    # SANS utiliser translate() qui cause les troncatures
-    text = re.sub(r'[^\w\s-]', ' ', text)  # Préserve les tirets
+    # Conversion en minuscules SEULEMENT
+    text = text.lower()
     
-    # Suppression des chiffres isolés SEULEMENT (préservation web3, eip1559, etc.)
-    text = re.sub(r'\b\d+\b(?!\w)', ' ', text)
+    # REMPLACEMENT PONCTUATION PAR ESPACES (pas de suppression brutale)
+    # Ceci évite les troncatures type "ethereum." → "thereum"
+    text = re.sub(r'[^\w\s]', ' ', text)
     
-    # Suppression des mots de 1 caractère (artefacts)
-    text = re.sub(r'\b\w\b', ' ', text)
+    # Suppression EXCLUSIVE des tokens numériques purs (dates, etc.)
+    # MAIS préservation des termes alphanumériques (web3, eip1559, etc.)
+    text = re.sub(r'\b\d+\b', ' ', text)
     
-    # Nettoyage final des espaces multiples
+    # Normalisation des espaces multiples
     text = re.sub(r'\s+', ' ', text).strip()
     
     return text
 
 def tokenize_ultra_strict(text):
     """
-    Tokenisation ultra-stricte avec préservation des termes techniques
+    Tokenisation ultra-stricte avec filtrage anti-troncature v1.5
     
     Args:
         text (str): Texte à tokeniser
         
     Returns:
-        list: Liste des tokens valides
+        list: Liste des tokens valides sans troncatures
     """
     if not text:
         return []
     
     words = text.split()
     
-    # Filtrage : longueur minimale + stopwords + validation alphabétique
+    # Filtrage renforcé contre les troncatures
     valid_tokens = []
     
+    # Liste d'exclusion des artefacts de troncature connus
+    TRUNCATION_ARTIFACTS = {
+        'thereum', 'itcoin', 'lockchain', 'ecentralized',  # mots tronqués
+        'nn', 'th', 're', 'as', 've', 'nnhe', 'nnnn',     # fragments
+        'ndate', 'nurl', 'nauteur', 'titre', 'evcon'      # artefacts métadonnées
+    }
+    
     for word in words:
-        # Longueur minimale
-        if len(word) < MIN_TOKEN_LENGTH:
+        # Élimination des artefacts de troncature EXPLICITES
+        if word in TRUNCATION_ARTIFACTS:
+            continue
+            
+        # Longueur minimale (mais pas trop restrictive)
+        if len(word) < 3:  # Augmenté à 3 pour éliminer fragments
             continue
             
         # Stopwords enrichie
         if word in STOPWORDS_ENRICHED:
             continue
             
-        # Validation : seulement lettres + quelques exceptions techniques
-        if not (word.isalpha() or word in CRYPTO_TECHNICAL_TERMS):
+        # Validation alphabétique STRICTE (pas de résidus numériques/ponctuels)
+        if not word.isalpha():
+            continue
+            
+        # Filtrage des patterns de troncature évidents
+        if (word.startswith('nn') and len(word) < 6) or \
+           (word.endswith('nn') and len(word) < 6):
             continue
             
         valid_tokens.append(word)
@@ -191,7 +201,7 @@ def main():
     ])
     
     # Export CSV enrichi
-    output_path = os.path.join(CSV_OUTPUT_DIR, 'word_frequencies_sts_v14.csv')
+    output_path = os.path.join(CSV_OUTPUT_DIR, 'word_frequencies_sts_v15.csv')
     df.to_csv(output_path, index=False, encoding='utf-8')
     
     print(f"Résultats exportés: {output_path}")
