@@ -157,9 +157,14 @@ def main():
     df.to_csv(output_path, index=False, encoding='utf-8')
     
     print(f"Résultats exportés: {output_path}")
-    print(f"Top 10 des termes les plus fréquents:")
-    for word, freq in word_frequencies.most_common(10):
+    print(f"Top 50 des termes les plus fréquents:")
+    for word, freq in word_frequencies.most_common(50):
         print(f"  {word}: {freq}")
+    
+    # Diagnostic du problème "thereum"
+    print(f"\n=== Diagnostic 'thereum' ===")
+    ethereum_variants = [word for word, freq in word_frequencies.items() if 'ther' in word]
+    print(f"Variantes contenant 'ther': {ethereum_variants[:10]}")
     
     # Statistiques méthodologiques
     print(f"\n=== Statistiques méthodologiques ===")
