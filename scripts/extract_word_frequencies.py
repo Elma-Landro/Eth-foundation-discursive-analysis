@@ -18,6 +18,7 @@ from collections import Counter
 import sys
 sys.path.append('.')
 from config import *
+from sts_lexicon_corrected import STS_LEXICON_CORRECTED
 
 def clean_text_ultra_conservative(text):
     """
@@ -107,6 +108,7 @@ def tokenize_ultra_strict(text):
 def categorize_sts_official(word_frequencies):
     """
     Catégorisation STS selon la grille officielle (9 catégories)
+    Utilise le lexique central de sts_lexicon_corrected.py
     
     Args:
         word_frequencies (Counter): Compteur de fréquences
@@ -114,86 +116,16 @@ def categorize_sts_official(word_frequencies):
     Returns:
         dict: Termes catégorisés par domaine STS officiel
     """
-    # GRILLE STS OFFICIELLE - 9 CATÉGORIES
-    STS_LEXICON_OFFICIAL = {
-        'protocolaire': {
-            'eip', 'eips', 'hardfork', 'fork', 'consensus', 'upgrade', 'protocol', 'specification', 
-            'standard', 'improvement', 'proposal', 'ethereum', 'beacon', 'merge', 'pos', 'pow', 
-            'casper', 'finality', 'epoch', 'slot', 'validator', 'attestation', 'committee', 
-            'sync', 'checkpoint', 'rules', 'hard'
-        },
-        
-        'infrastructurel': {
-            'network', 'scaling', 'layer', 'rollup', 'rollups', 'optimistic', 'arbitrum', 
-            'optimism', 'zk', 'zkrollup', 'polygon', 'shard', 'sharding', 'shards', 
-            'execution', 'consensus', 'beacon', 'chain', 'block', 'blockchain', 'node', 
-            'nodes', 'client', 'clients', 'peer', 'infrastructure', 'architecture', 
-            'latency', 'throughput', 'performance', 'capacity'
-        },
-        
-        'gouvernance': {
-            'staking', 'stake', 'staker', 'slashing', 'validator', 'validators', 'delegate', 
-            'delegation', 'governance', 'dao', 'vote', 'voting', 'proposal', 'decision', 
-            'foundation', 'board', 'community', 'coordination', 'stakeholder', 'participant', 
-            'member', 'contributor', 'committee', 'council', 'democratic', 'participation', 
-            'funding'
-        },
-        
-        'sécurité': {
-            'security', 'vulnerability', 'audit', 'bug', 'exploit', 'attack', 'threat', 
-            'risk', 'cryptography', 'encryption', 'signature', 'verification', 'proof', 
-            'zk', 'zero', 'knowledge', 'formal', 'safety', 'secure', 'trust', 'trustless', 
-            'immutable', 'tamper', 'resistant', 'robust', 'authentication', 'authorization'
-        },
-        
-        'usages': {
-            'wallet', 'wallets', 'interface', 'user', 'experience', 'usability', 
-            'accessibility', 'dapp', 'dapps', 'application', 'applications', 'service', 
-            'platform', 'adoption', 'mainstream', 'enterprise', 'business', 'frontend', 
-            'backend', 'mobile', 'web', 'browser', 'metamask', 'etherscan', 'tools', 'tooling'
-        },
-        
-        'recherche': {
-            'research', 'paper', 'academic', 'study', 'analysis', 'theory', 'theoretical', 
-            'model', 'modeling', 'simulation', 'experiment', 'formal', 'mathematics', 
-            'cryptographic', 'algorithm', 'optimization', 'design', 'specification', 
-            'whitepaper', 'yellowpaper', 'documentation', 'technical', 'science'
-        },
-        
-        'développement': {
-            'solidity', 'vyper', 'foundry', 'hardhat', 'truffle', 'remix', 'compiler', 
-            'development', 'developer', 'coding', 'programming', 'software', 'code', 
-            'implementation', 'deployment', 'testing', 'debugging', 'github', 'repository', 
-            'commit', 'pull', 'request', 'issue', 'feature', 'api', 'sdk', 'library', 
-            'framework', 'toolchain', 'ide', 'environment'
-        },
-        
-        'defi_finance': {
-            'defi', 'amm', 'mev', 'liquidity', 'flashloan', 'yield', 'farming', 'swap', 
-            'uniswap', 'compound', 'aave', 'maker', 'dai', 'usdc', 'token', 'tokens', 
-            'erc20', 'erc721', 'nft', 'nfts', 'market', 'trading', 'exchange', 'price', 
-            'value', 'economic', 'economy', 'financial', 'monetary', 'currency', 'eth', 
-            'ether', 'gas', 'fee', 'fees', 'cost', 'incentive', 'reward'
-        },
-        
-        'discours_vision': {
-            'decentralized', 'decentralization', 'centralized', 'trustless', 'permissionless', 
-            'censorship', 'resistant', 'open', 'transparent', 'immutable', 'autonomous', 
-            'sovereignty', 'freedom', 'innovation', 'disruption', 'transformation', 
-            'future', 'vision', 'philosophy', 'values', 'principles', 'ethos', 'mission', 
-            'scalable', 'sustainable', 'inclusive', 'accessible', 'global', 'universal'
-        }
-    }
     
     sts_categorized = {}
     
-    for category, terms in STS_LEXICON_OFFICIAL.items():
+    for category, terms in STS_LEXICON_CORRECTED.items():
         sts_categorized[category] = []
         for word, freq in word_frequencies.most_common():
             if word in terms:
                 sts_categorized[category].append((word, freq))
     
-    return sts_categorized, STS_LEXICON_OFFICIAL
+    return sts_categorized, STS_LEXICON_CORRECTED
 
 def main():
     """
