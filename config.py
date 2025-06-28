@@ -79,12 +79,12 @@ STOPWORDS_MINIMAL = STOPWORDS_ENRICHED
 
 # === LEXIQUE STS POUR CODAGE AXIAL - GRILLE STRUCTURÉE ===
 
-# 🧭 Catégories STS (analytico-théoriques)
+# 🧭 Catégories STS (analytico-théoriques) - GRILLE OFFICIELLE
 STS_LEXICON = {
     'protocolaire': {
         'eip', 'eips', 'hardfork', 'fork', 'consensus', 'upgrade', 'protocol', 'specification', 'standard',
         'improvement', 'proposal', 'ethereum', 'beacon', 'merge', 'pos', 'pow', 'casper', 'finality',
-        'epoch', 'slot', 'validator', 'attestation', 'committee', 'sync', 'checkpoint'
+        'epoch', 'slot', 'validator', 'attestation', 'committee', 'sync', 'checkpoint', 'rules', 'hard'
     },
     
     'infrastructurel': {
@@ -97,21 +97,21 @@ STS_LEXICON = {
     'gouvernance': {
         'staking', 'stake', 'staker', 'slashing', 'validator', 'validators', 'delegate', 'delegation',
         'governance', 'dao', 'vote', 'voting', 'proposal', 'decision', 'foundation', 'board',
-        'community', 'coordination', 'consensus', 'stakeholder', 'participant', 'member',
+        'community', 'coordination', 'stakeholder', 'participant', 'member',
         'contributor', 'committee', 'council', 'democratic', 'participation', 'funding'
     },
     
     'sécurité': {
         'security', 'vulnerability', 'audit', 'bug', 'exploit', 'attack', 'threat', 'risk',
         'cryptography', 'encryption', 'signature', 'verification', 'proof', 'zk', 'zero',
-        'knowledge', 'formal', 'verification', 'safety', 'secure', 'trust', 'trustless',
+        'knowledge', 'formal', 'safety', 'secure', 'trust', 'trustless',
         'immutable', 'tamper', 'resistant', 'robust', 'authentication', 'authorization'
     },
     
     'usages': {
         'wallet', 'wallets', 'interface', 'user', 'experience', 'usability', 'accessibility',
         'dapp', 'dapps', 'application', 'applications', 'service', 'platform', 'adoption',
-        'mainstream', 'enterprise', 'business', 'end', 'frontend', 'backend', 'mobile',
+        'mainstream', 'enterprise', 'business', 'frontend', 'backend', 'mobile',
         'web', 'browser', 'metamask', 'etherscan', 'tools', 'tooling'
     },
     

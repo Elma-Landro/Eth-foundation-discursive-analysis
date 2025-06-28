@@ -1,11 +1,12 @@
 
 """
-Extraction des fréquences lexicales - Version 1.1
+Extraction des fréquences lexicales - Version 1.3 CORRECTIVE
 Ethereum Foundation Discursive Analysis
 
-Corrections v1.1 :
-- Correction regex email (échappement \b)
-- Préservation des termes techniques crypto
+Corrections v1.3 :
+- CORRECTION MAJEURE : élimination des troncatures "thereum"
+- CORRECTION MAJEURE : élimination des artéfacts "nn"
+- Nettoyage textuel refondu pour préserver l'intégrité lexicale
 - Intégration configuration centralisée
 - Documentation méthodologique renforcée
 """
@@ -21,77 +22,58 @@ from config import *
 
 def clean_text_advanced(text):
     """
-    Nettoyage textuel avancé orienté STS - Version 1.2
+    Nettoyage textuel avancé orienté STS - Version 1.3 CORRECTIVE
     
-    Approche méthodologique :
-    - Correction de la troncature "thereum" → "ethereum"
-    - Nettoyage minimal pour préserver les catégories indigènes
-    - Préservation des termes techniques crypto (EIP, web3, etc.)
-    - Suppression ciblée des artéfacts techniques (URLs, adresses ETH)
+    CORRECTIONS MAJEURES v1.3 :
+    - Élimination des troncatures de mots (ethereum → thereum)
+    - Élimination des artéfacts "nn" 
+    - Préservation complète de l'intégrité lexicale
+    - Nettoyage minimal et conservateur
     
     Args:
         text (str): Texte brut à nettoyer
         
     Returns:
-        str: Texte nettoyé
+        str: Texte nettoyé sans artéfacts
     """
-    # CORRECTION CRITIQUE v1.2: Normalisation avant mise en minuscules
-    # Pré-traitement pour éviter les troncatures
-    text = re.sub(r'\s+', ' ', text.strip())  # Normalisation des espaces AVANT lower()
+    if not text:
+        return ""
     
+    # Conversion en minuscules IMMÉDIATE pour éviter les problèmes de casse
     text = text.lower()
-
+    
+    # Normalisation basique des espaces AVANT tout traitement
+    text = re.sub(r'\s+', ' ', text.strip())
+    
     # Suppression des URLs (préservation du contenu discursif)
-    text = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\,]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', text)
-
-    # Suppression des emails - CORRECTION CRITIQUE v1.1
-    text = re.sub(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', '', text)
-
-    # Suppression des adresses Ethereum (artéfacts techniques)
-    text = re.sub(r'0x[a-fA-F0-9]{40,}', '', text)
-
-    # CORRECTION CRITIQUE v1.2 : Préservation termes complets AVANT suppression ponctuation
-    # Sauvegarde complète des termes techniques ET des termes STS
-    temp_replacements = {}
+    text = re.sub(r'https?://[^\s]+', ' ', text)
     
-    if PRESERVE_CRYPTO_TERMS:
-        for i, term in enumerate(CRYPTO_TECHNICAL_TERMS):
-            placeholder = f"CRYPTOTERM{i}PLACEHOLDER"
-            if term in text:
-                text = text.replace(term, placeholder)
-                temp_replacements[placeholder] = term
+    # Suppression des emails 
+    text = re.sub(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', ' ', text)
     
-    # Sauvegarde des termes STS critiques pour éviter leur fragmentation
-    sts_critical_terms = ['ethereum', 'blockchain', 'decentralized', 'consensus', 'governance', 'protocol']
-    for i, term in enumerate(sts_critical_terms):
-        placeholder = f"STSTERM{i}PLACEHOLDER"
-        if term in text:
-            text = text.replace(term, placeholder)
-            temp_replacements[placeholder] = term
-
-    # Suppression de la ponctuation (APRÈS sauvegarde)
-    text = text.translate(str.maketrans('', '', string.punctuation))
+    # Suppression des adresses Ethereum
+    text = re.sub(r'0x[a-fA-F0-9]{40,}', ' ', text)
+    
+    # CORRECTION CRITIQUE : Suppression des séquences "nn" parasites
+    # Ces artéfacts viennent probablement de l'extraction HTML mal traitée
+    text = re.sub(r'\bnn\b', ' ', text)  # "nn" isolés
+    text = re.sub(r'nn+', ' ', text)     # Séquences "nnn", "nnnn", etc.
+    
+    # Suppression de la ponctuation de manière conservative
+    # On évite translate() qui peut créer des troncatures
+    text = re.sub(r'[^\w\s]', ' ', text)
     
     # Suppression des chiffres isolés (mais préservation des termes comme "web3", "eip1559")
-    text = re.sub(r'\b\d+\b', '', text)
+    text = re.sub(r'\b\d+\b', ' ', text)
     
-    # Restauration de TOUS les termes sauvegardés
-    for placeholder, original_term in temp_replacements.items():
-        text = text.replace(placeholder, original_term)
-
     # Nettoyage final des espaces multiples
     text = re.sub(r'\s+', ' ', text).strip()
-
+    
     return text
 
 def tokenize_strict(text):
     """
-    Tokenisation stricte avec filtrage par stopwords minimaux
-    
-    Approche méthodologique :
-    - Stopwords minimaux pour préserver le vocabulaire technique
-    - Filtrage par longueur pour éliminer les artéfacts
-    - Conservation des termes composés pertinents
+    Tokenisation stricte avec filtrage par stopwords enrichie
     
     Args:
         text (str): Texte à tokeniser
@@ -99,15 +81,20 @@ def tokenize_strict(text):
     Returns:
         list: Liste des tokens valides
     """
+    if not text:
+        return []
+    
     words = text.split()
     
-    # Filtrage : longueur minimale + stopwords
+    # Filtrage : longueur minimale + stopwords enrichie
     valid_tokens = [
         word for word in words 
-        if len(word) > MIN_TOKEN_LENGTH and word not in STOPWORDS_MINIMAL
+        if len(word) >= MIN_TOKEN_LENGTH 
+        and word not in STOPWORDS_ENRICHED
+        and word.isalpha()  # Seulement des lettres pour éviter les artéfacts
     ]
     
-    if LOG_PROCESSING_STEPS:
+    if LOG_PROCESSING_STEPS and len(words) > 0:
         print(f"Tokens avant filtrage: {len(words)}, après filtrage: {len(valid_tokens)}")
     
     return valid_tokens
@@ -134,10 +121,11 @@ def categorize_sts_terms(word_frequencies):
 
 def main():
     """
-    Pipeline principal d'extraction des fréquences lexicales - Version STS 1.2
+    Pipeline principal d'extraction des fréquences lexicales - Version STS 1.3 CORRECTIVE
     """
-    print("=== Extraction des fréquences lexicales v1.2 STS ===")
-    print(f"Configuration: stopwords enrichie, préservation crypto: {PRESERVE_CRYPTO_TERMS}")
+    print("=== Extraction des fréquences lexicales v1.3 CORRECTIVE ===")
+    print("CORRECTIONS : élimination troncatures + artéfacts 'nn'")
+    print(f"Configuration: stopwords enrichie, nettoyage conservateur")
     print(f"Lexique STS: {len(STS_LEXICON)} catégories sociotechniques")
     
     # Vérification de l'existence du dossier de données
@@ -158,7 +146,7 @@ def main():
                 with open(file_path, 'r', encoding='utf-8') as file:
                     text = file.read()
                     
-                    # Pipeline de traitement
+                    # Pipeline de traitement CORRIGÉ
                     cleaned_text = clean_text_advanced(text)
                     words = tokenize_strict(cleaned_text)
                     all_words.extend(words)
@@ -190,39 +178,47 @@ def main():
             'word': word, 
             'frequency': freq, 
             'relative_frequency': freq/len(all_words),
-            'sts_category': sts_category_map.get(word, 'uncategorized')
+            'sts_category': sts_category_map.get(word, '—')
         }
         for word, freq in word_frequencies.most_common()
     ])
     
     # Export CSV enrichi
-    output_path = os.path.join(CSV_OUTPUT_DIR, 'word_frequencies_sts.csv')
+    output_path = os.path.join(CSV_OUTPUT_DIR, 'word_frequencies_sts_v13.csv')
     df.to_csv(output_path, index=False, encoding='utf-8')
     
     print(f"Résultats exportés: {output_path}")
     
     # Affichage des termes STS par catégorie (PRIORITÉ POUR CODAGE AXIAL)
-    print(f"\n=== ANALYSE STS POUR CODAGE AXIAL ===")
+    print(f"\n=== ANALYSE STS POUR CODAGE AXIAL (v1.3) ===")
     for category, terms_list in sts_categorized.items():
         if terms_list:
             print(f"\n🔹 {category.upper()} ({len(terms_list)} termes):")
             for word, freq in terms_list[:10]:  # Top 10 par catégorie
                 print(f"  {word}: {freq}")
     
-    # Top 30 général (après filtrage STS)
-    print(f"\n=== TOP 30 GÉNÉRAL (post-nettoyage STS) ===")
-    for word, freq in word_frequencies.most_common(30):
-        category = sts_category_map.get(word, '')
-        category_marker = f" [{category}]" if category != 'uncategorized' else ""
-        print(f"  {word}: {freq}{category_marker}")
+    # Top 50 général (après corrections v1.3)
+    print(f"\n=== TOP 50 GÉNÉRAL (post-corrections v1.3) ===")
+    for i, (word, freq) in enumerate(word_frequencies.most_common(50), 1):
+        category = sts_category_map.get(word, '—')
+        print(f"{i:3d} | {word:<20} | {freq:>6} | {freq/len(all_words)*100:>6.2f}% | {category}")
     
-    # Diagnostic de correction
-    print(f"\n=== Diagnostic corrections v1.2 ===")
+    # Diagnostic de correction v1.3
+    print(f"\n=== Diagnostic corrections v1.3 ===")
+    
+    # Vérification élimination troncatures
     ethereum_variants = [word for word, freq in word_frequencies.items() if 'ethereum' in word or 'thereum' in word]
     print(f"Variants Ethereum détectés: {ethereum_variants}")
     
+    # Vérification élimination artéfacts "nn"
+    nn_artifacts = [word for word, freq in word_frequencies.items() if 'nn' in word]
+    if nn_artifacts:
+        print(f"⚠️ Artéfacts 'nn' restants: {nn_artifacts[:10]} (total: {len(nn_artifacts)})")
+    else:
+        print("✅ Aucun artéfact 'nn' détecté")
+    
     # Statistiques méthodologiques STS
-    print(f"\n=== Statistiques méthodologiques STS ===")
+    print(f"\n=== Statistiques méthodologiques STS (v1.3) ===")
     print(f"Vocabulaire unique: {len(word_frequencies)} termes")
     print(f"Tokens totaux: {len(all_words)}")
     print(f"Richesse lexicale (TTR): {len(word_frequencies)/len(all_words):.4f}")
