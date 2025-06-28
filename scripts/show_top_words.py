@@ -14,8 +14,8 @@ def show_top_50_words():
     """
     Affiche les 50 mots les plus fréquents avec leurs statistiques
     """
-    # Chemin du fichier des fréquences
-    input_file = os.path.join(CSV_OUTPUT_DIR, 'word_frequencies_sts.csv')
+    # Chemin du fichier des fréquences v1.4 corrigé
+    input_file = os.path.join(CSV_OUTPUT_DIR, 'word_frequencies_sts_v14.csv')
     
     if not os.path.exists(input_file):
         print(f"❌ Fichier {input_file} non trouvé.")

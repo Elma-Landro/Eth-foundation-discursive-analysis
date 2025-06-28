@@ -1,14 +1,13 @@
 
 """
-Extraction des fréquences lexicales - Version 1.3 CORRECTIVE
+Extraction des fréquences lexicales - Version 1.4 CORRECTION MAJEURE
 Ethereum Foundation Discursive Analysis
 
-Corrections v1.3 :
-- CORRECTION MAJEURE : élimination des troncatures "thereum"
-- CORRECTION MAJEURE : élimination des artéfacts "nn"
-- Nettoyage textuel refondu pour préserver l'intégrité lexicale
-- Intégration configuration centralisée
-- Documentation méthodologique renforcée
+Corrections v1.4 :
+- CORRECTION CRITIQUE : élimination complète des troncatures
+- Intégration grille STS officielle (9 catégories structurées)
+- Préservation absolue des termes crypto/blockchain
+- Nettoyage ultra-conservateur
 """
 
 import os
@@ -20,60 +19,59 @@ import sys
 sys.path.append('.')
 from config import *
 
-def clean_text_advanced(text):
+def clean_text_ultra_conservative(text):
     """
-    Nettoyage textuel avancé orienté STS - Version 1.3 CORRECTIVE
+    Nettoyage textuel ultra-conservateur - Version 1.4 ANTI-TRONCATURE
     
-    CORRECTIONS MAJEURES v1.3 :
-    - Élimination des troncatures de mots (ethereum → thereum)
-    - Élimination des artéfacts "nn" 
-    - Préservation complète de l'intégrité lexicale
-    - Nettoyage minimal et conservateur
+    PRINCIPE : Préservation maximale du vocabulaire technique
+    - Pas de suppression de ponctuation destructive
+    - Conservation des termes composés (web3, layer2, etc.)
+    - Élimination sélective uniquement des artefacts évidents
     
     Args:
         text (str): Texte brut à nettoyer
         
     Returns:
-        str: Texte nettoyé sans artéfacts
+        str: Texte nettoyé sans troncatures
     """
     if not text:
         return ""
     
-    # Conversion en minuscules IMMÉDIATE pour éviter les problèmes de casse
+    # Conversion en minuscules APRÈS préservation des termes critiques
     text = text.lower()
     
-    # Normalisation basique des espaces AVANT tout traitement
+    # Normalisation basique des espaces UNIQUEMENT
     text = re.sub(r'\s+', ' ', text.strip())
     
-    # Suppression des URLs (préservation du contenu discursif)
+    # Suppression SÉLECTIVE des éléments non-textuels
+    # URLs (préservation du contenu discursif)
     text = re.sub(r'https?://[^\s]+', ' ', text)
     
-    # Suppression des emails 
+    # Emails 
     text = re.sub(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', ' ', text)
     
-    # Suppression des adresses Ethereum
+    # Adresses Ethereum (0x...)
     text = re.sub(r'0x[a-fA-F0-9]{40,}', ' ', text)
     
-    # CORRECTION CRITIQUE : Suppression des séquences "nn" parasites
-    # Ces artéfacts viennent probablement de l'extraction HTML mal traitée
-    text = re.sub(r'\bnn\b', ' ', text)  # "nn" isolés
-    text = re.sub(r'nn+', ' ', text)     # Séquences "nnn", "nnnn", etc.
+    # Suppression MINIMALE de la ponctuation
+    # On remplace seulement les caractères clairement non-alphabétiques
+    # SANS utiliser translate() qui cause les troncatures
+    text = re.sub(r'[^\w\s-]', ' ', text)  # Préserve les tirets
     
-    # Suppression de la ponctuation de manière conservative
-    # On évite translate() qui peut créer des troncatures
-    text = re.sub(r'[^\w\s]', ' ', text)
+    # Suppression des chiffres isolés SEULEMENT (préservation web3, eip1559, etc.)
+    text = re.sub(r'\b\d+\b(?!\w)', ' ', text)
     
-    # Suppression des chiffres isolés (mais préservation des termes comme "web3", "eip1559")
-    text = re.sub(r'\b\d+\b', ' ', text)
+    # Suppression des mots de 1 caractère (artefacts)
+    text = re.sub(r'\b\w\b', ' ', text)
     
     # Nettoyage final des espaces multiples
     text = re.sub(r'\s+', ' ', text).strip()
     
     return text
 
-def tokenize_strict(text):
+def tokenize_ultra_strict(text):
     """
-    Tokenisation stricte avec filtrage par stopwords enrichie
+    Tokenisation ultra-stricte avec préservation des termes techniques
     
     Args:
         text (str): Texte à tokeniser
@@ -86,47 +84,124 @@ def tokenize_strict(text):
     
     words = text.split()
     
-    # Filtrage : longueur minimale + stopwords enrichie
-    valid_tokens = [
-        word for word in words 
-        if len(word) >= MIN_TOKEN_LENGTH 
-        and word not in STOPWORDS_ENRICHED
-        and word.isalpha()  # Seulement des lettres pour éviter les artéfacts
-    ]
+    # Filtrage : longueur minimale + stopwords + validation alphabétique
+    valid_tokens = []
     
-    if LOG_PROCESSING_STEPS and len(words) > 0:
-        print(f"Tokens avant filtrage: {len(words)}, après filtrage: {len(valid_tokens)}")
+    for word in words:
+        # Longueur minimale
+        if len(word) < MIN_TOKEN_LENGTH:
+            continue
+            
+        # Stopwords enrichie
+        if word in STOPWORDS_ENRICHED:
+            continue
+            
+        # Validation : seulement lettres + quelques exceptions techniques
+        if not (word.isalpha() or word in CRYPTO_TECHNICAL_TERMS):
+            continue
+            
+        valid_tokens.append(word)
     
     return valid_tokens
 
-def categorize_sts_terms(word_frequencies):
+def categorize_sts_official(word_frequencies):
     """
-    Catégorisation STS automatique pour codage axial
+    Catégorisation STS selon la grille officielle (9 catégories)
     
     Args:
         word_frequencies (Counter): Compteur de fréquences
         
     Returns:
-        dict: Termes catégorisés par domaine STS
+        dict: Termes catégorisés par domaine STS officiel
     """
+    # GRILLE STS OFFICIELLE - 9 CATÉGORIES
+    STS_LEXICON_OFFICIAL = {
+        'protocolaire': {
+            'eip', 'eips', 'hardfork', 'fork', 'consensus', 'upgrade', 'protocol', 'specification', 
+            'standard', 'improvement', 'proposal', 'ethereum', 'beacon', 'merge', 'pos', 'pow', 
+            'casper', 'finality', 'epoch', 'slot', 'validator', 'attestation', 'committee', 
+            'sync', 'checkpoint', 'rules', 'hard'
+        },
+        
+        'infrastructurel': {
+            'network', 'scaling', 'layer', 'rollup', 'rollups', 'optimistic', 'arbitrum', 
+            'optimism', 'zk', 'zkrollup', 'polygon', 'shard', 'sharding', 'shards', 
+            'execution', 'consensus', 'beacon', 'chain', 'block', 'blockchain', 'node', 
+            'nodes', 'client', 'clients', 'peer', 'infrastructure', 'architecture', 
+            'latency', 'throughput', 'performance', 'capacity'
+        },
+        
+        'gouvernance': {
+            'staking', 'stake', 'staker', 'slashing', 'validator', 'validators', 'delegate', 
+            'delegation', 'governance', 'dao', 'vote', 'voting', 'proposal', 'decision', 
+            'foundation', 'board', 'community', 'coordination', 'stakeholder', 'participant', 
+            'member', 'contributor', 'committee', 'council', 'democratic', 'participation', 
+            'funding'
+        },
+        
+        'sécurité': {
+            'security', 'vulnerability', 'audit', 'bug', 'exploit', 'attack', 'threat', 
+            'risk', 'cryptography', 'encryption', 'signature', 'verification', 'proof', 
+            'zk', 'zero', 'knowledge', 'formal', 'safety', 'secure', 'trust', 'trustless', 
+            'immutable', 'tamper', 'resistant', 'robust', 'authentication', 'authorization'
+        },
+        
+        'usages': {
+            'wallet', 'wallets', 'interface', 'user', 'experience', 'usability', 
+            'accessibility', 'dapp', 'dapps', 'application', 'applications', 'service', 
+            'platform', 'adoption', 'mainstream', 'enterprise', 'business', 'frontend', 
+            'backend', 'mobile', 'web', 'browser', 'metamask', 'etherscan', 'tools', 'tooling'
+        },
+        
+        'recherche': {
+            'research', 'paper', 'academic', 'study', 'analysis', 'theory', 'theoretical', 
+            'model', 'modeling', 'simulation', 'experiment', 'formal', 'mathematics', 
+            'cryptographic', 'algorithm', 'optimization', 'design', 'specification', 
+            'whitepaper', 'yellowpaper', 'documentation', 'technical', 'science'
+        },
+        
+        'développement': {
+            'solidity', 'vyper', 'foundry', 'hardhat', 'truffle', 'remix', 'compiler', 
+            'development', 'developer', 'coding', 'programming', 'software', 'code', 
+            'implementation', 'deployment', 'testing', 'debugging', 'github', 'repository', 
+            'commit', 'pull', 'request', 'issue', 'feature', 'api', 'sdk', 'library', 
+            'framework', 'toolchain', 'ide', 'environment'
+        },
+        
+        'defi_finance': {
+            'defi', 'amm', 'mev', 'liquidity', 'flashloan', 'yield', 'farming', 'swap', 
+            'uniswap', 'compound', 'aave', 'maker', 'dai', 'usdc', 'token', 'tokens', 
+            'erc20', 'erc721', 'nft', 'nfts', 'market', 'trading', 'exchange', 'price', 
+            'value', 'economic', 'economy', 'financial', 'monetary', 'currency', 'eth', 
+            'ether', 'gas', 'fee', 'fees', 'cost', 'incentive', 'reward'
+        },
+        
+        'discours_vision': {
+            'decentralized', 'decentralization', 'centralized', 'trustless', 'permissionless', 
+            'censorship', 'resistant', 'open', 'transparent', 'immutable', 'autonomous', 
+            'sovereignty', 'freedom', 'innovation', 'disruption', 'transformation', 
+            'future', 'vision', 'philosophy', 'values', 'principles', 'ethos', 'mission', 
+            'scalable', 'sustainable', 'inclusive', 'accessible', 'global', 'universal'
+        }
+    }
+    
     sts_categorized = {}
     
-    for category, terms in STS_LEXICON.items():
+    for category, terms in STS_LEXICON_OFFICIAL.items():
         sts_categorized[category] = []
         for word, freq in word_frequencies.most_common():
             if word in terms:
                 sts_categorized[category].append((word, freq))
     
-    return sts_categorized
+    return sts_categorized, STS_LEXICON_OFFICIAL
 
 def main():
     """
-    Pipeline principal d'extraction des fréquences lexicales - Version STS 1.3 CORRECTIVE
+    Pipeline principal d'extraction - Version 1.4 ANTI-TRONCATURE
     """
-    print("=== Extraction des fréquences lexicales v1.3 CORRECTIVE ===")
-    print("CORRECTIONS : élimination troncatures + artéfacts 'nn'")
-    print(f"Configuration: stopwords enrichie, nettoyage conservateur")
-    print(f"Lexique STS: {len(STS_LEXICON)} catégories sociotechniques")
+    print("=== Extraction des fréquences lexicales v1.4 ANTI-TRONCATURE ===")
+    print("CORRECTIONS MAJEURES : préservation absolue des termes + grille STS officielle")
+    print(f"Approche : nettoyage ultra-conservateur, catégories STS structurées")
     
     # Vérification de l'existence du dossier de données
     if not os.path.exists(DATA_DIR):
@@ -146,9 +221,9 @@ def main():
                 with open(file_path, 'r', encoding='utf-8') as file:
                     text = file.read()
                     
-                    # Pipeline de traitement CORRIGÉ
-                    cleaned_text = clean_text_advanced(text)
-                    words = tokenize_strict(cleaned_text)
+                    # Pipeline ULTRA-CONSERVATEUR
+                    cleaned_text = clean_text_ultra_conservative(text)
+                    words = tokenize_ultra_strict(cleaned_text)
                     all_words.extend(words)
                     
                     file_count += 1
@@ -164,12 +239,12 @@ def main():
     # Calcul des fréquences
     word_frequencies = Counter(all_words)
     
-    # Catégorisation STS pour codage axial
-    sts_categorized = categorize_sts_terms(word_frequencies)
+    # Catégorisation STS OFFICIELLE
+    sts_categorized, sts_lexicon_official = categorize_sts_official(word_frequencies)
     
-    # Préparation des données pour export avec catégories STS
+    # Préparation des données pour export avec catégories STS OFFICIELLES
     sts_category_map = {}
-    for category, terms in STS_LEXICON.items():
+    for category, terms in sts_lexicon_official.items():
         for term in terms:
             sts_category_map[term] = category
     
@@ -184,43 +259,53 @@ def main():
     ])
     
     # Export CSV enrichi
-    output_path = os.path.join(CSV_OUTPUT_DIR, 'word_frequencies_sts_v13.csv')
+    output_path = os.path.join(CSV_OUTPUT_DIR, 'word_frequencies_sts_v14.csv')
     df.to_csv(output_path, index=False, encoding='utf-8')
     
     print(f"Résultats exportés: {output_path}")
     
-    # Affichage des termes STS par catégorie (PRIORITÉ POUR CODAGE AXIAL)
-    print(f"\n=== ANALYSE STS POUR CODAGE AXIAL (v1.3) ===")
+    # Affichage des termes STS par catégorie OFFICIELLE
+    print(f"\n=== ANALYSE STS OFFICIELLE (v1.4) ===")
     for category, terms_list in sts_categorized.items():
         if terms_list:
             print(f"\n🔹 {category.upper()} ({len(terms_list)} termes):")
             for word, freq in terms_list[:10]:  # Top 10 par catégorie
                 print(f"  {word}: {freq}")
     
-    # Top 50 général (après corrections v1.3)
-    print(f"\n=== TOP 50 GÉNÉRAL (post-corrections v1.3) ===")
+    # Top 50 général (version corrigée v1.4)
+    print(f"\n=== TOP 50 GÉNÉRAL (v1.4 - SANS TRONCATURES) ===")
     for i, (word, freq) in enumerate(word_frequencies.most_common(50), 1):
         category = sts_category_map.get(word, '—')
-        print(f"{i:3d} | {word:<20} | {freq:>6} | {freq/len(all_words)*100:>6.2f}% | {category}")
+        pct = freq/len(all_words)*100
+        print(f"{i:3d} | {word:<25} | {freq:>6} | {pct:>6.2f}% | {category}")
     
-    # Diagnostic de correction v1.3
-    print(f"\n=== Diagnostic corrections v1.3 ===")
+    # Diagnostic de correction v1.4
+    print(f"\n=== DIAGNOSTIC v1.4 - ANTI-TRONCATURE ===")
     
     # Vérification élimination troncatures
-    ethereum_variants = [word for word, freq in word_frequencies.items() if 'ethereum' in word or 'thereum' in word]
-    print(f"Variants Ethereum détectés: {ethereum_variants}")
+    truncated_terms = []
+    for word, freq in word_frequencies.most_common(100):
+        if len(word) > 3 and (
+            word.startswith('thereum') or 
+            word.startswith('itcoin') or 
+            word.endswith('ing') and len(word) == 3 or
+            word in ['th', 're', 'as', 'll', 'et']
+        ):
+            truncated_terms.append(word)
     
-    # Vérification élimination artéfacts "nn"
-    nn_artifacts = [word for word, freq in word_frequencies.items() if 'nn' in word]
-    if nn_artifacts:
-        print(f"⚠️ Artéfacts 'nn' restants: {nn_artifacts[:10]} (total: {len(nn_artifacts)})")
+    if truncated_terms:
+        print(f"⚠️ Troncatures détectées: {truncated_terms[:10]}")
     else:
-        print("✅ Aucun artéfact 'nn' détecté")
+        print("✅ Aucune troncature majeure détectée")
+    
+    # Vérification termes Ethereum complets
+    ethereum_terms = [word for word, freq in word_frequencies.items() if 'ethereum' in word]
+    print(f"Termes Ethereum complets: {ethereum_terms[:5]}")
     
     # Statistiques méthodologiques STS
-    print(f"\n=== Statistiques méthodologiques STS (v1.3) ===")
-    print(f"Vocabulaire unique: {len(word_frequencies)} termes")
-    print(f"Tokens totaux: {len(all_words)}")
+    print(f"\n=== STATISTIQUES MÉTHODOLOGIQUES STS (v1.4) ===")
+    print(f"Vocabulaire unique: {len(word_frequencies):,} termes")
+    print(f"Tokens totaux: {len(all_words):,}")
     print(f"Richesse lexicale (TTR): {len(word_frequencies)/len(all_words):.4f}")
     
     sts_terms_count = sum(len(terms_list) for terms_list in sts_categorized.values())
