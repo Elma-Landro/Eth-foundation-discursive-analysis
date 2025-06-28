@@ -35,16 +35,85 @@ DATA_DIR = CORPUS_TXT_DIR
 
 # === PARAMÈTRES DE NETTOYAGE TEXTUEL ===
 
-# Stopwords minimaux pour préserver le vocabulaire indigène
-# Approche STS : conservation des termes techniques et conceptuels
-STOPWORDS_MINIMAL = {
-    'the', 'and', 'of', 'to', 'in', 'for', 'is', 'on', 'that', 'with', 'as',
-    'by', 'it', 'are', 'at', 'from', 'an', 'be', 'or', 'we', 'can',
-    'have', 'has', 'our', 'also', 'which', 'their', 'will', 'all',
-    'but', 'was', 'they', 'these', 'may', 'you', 'been', 'its',
-    'if', 'do', 'does', 'did', 'because', 'however', 'therefore', 'thus',
-    'when', 'then', 'now', 'always', 'never', 'this', 'a',
-    'very', 'most', 'some', 'many', 'such', 'would', 'could', 'should'
+# Stopwords enrichie pour analyse STS précise
+STOPWORDS_ENRICHED = {
+    # Articles, pronoms, auxiliaires
+    'the', 'a', 'an', 'this', 'that', 'these', 'those', 'my', 'your', 'his', 'her', 'its', 'our', 'their',
+    'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them',
+    'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having',
+    'do', 'does', 'did', 'doing', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can',
+    
+    # Prépositions et conjonctions
+    'of', 'to', 'in', 'for', 'on', 'with', 'at', 'by', 'from', 'up', 'about', 'into', 'through', 'during',
+    'before', 'after', 'above', 'below', 'between', 'among', 'under', 'over', 'within', 'without',
+    'and', 'or', 'but', 'nor', 'so', 'yet', 'because', 'since', 'although', 'though', 'while', 'whereas',
+    'if', 'unless', 'until', 'when', 'where', 'why', 'how', 'what', 'which', 'who', 'whom', 'whose',
+    
+    # Adverbes de liaison et marqueurs discursifs (critiques pour STS)
+    'also', 'however', 'therefore', 'thus', 'hence', 'consequently', 'moreover', 'furthermore', 'nevertheless',
+    'nonetheless', 'meanwhile', 'likewise', 'similarly', 'conversely', 'instead', 'otherwise', 'accordingly',
+    'indeed', 'certainly', 'obviously', 'clearly', 'particularly', 'especially', 'specifically', 'generally',
+    
+    # Quantificateurs et intensifieurs (bruit lexical)
+    'all', 'some', 'any', 'many', 'much', 'more', 'most', 'less', 'least', 'few', 'several', 'both',
+    'each', 'every', 'either', 'neither', 'one', 'two', 'three', 'first', 'second', 'third', 'last',
+    'very', 'quite', 'rather', 'pretty', 'fairly', 'extremely', 'highly', 'really', 'truly', 'actually',
+    
+    # Connecteurs temporels
+    'now', 'then', 'today', 'tomorrow', 'yesterday', 'always', 'never', 'often', 'sometimes', 'usually',
+    'frequently', 'rarely', 'seldom', 'once', 'twice', 'again', 'still', 'yet', 'already', 'soon',
+    
+    # Verbes génériques (peu informatifs pour STS)
+    'get', 'got', 'getting', 'give', 'given', 'giving', 'take', 'taken', 'taking', 'make', 'made', 'making',
+    'come', 'came', 'coming', 'go', 'went', 'going', 'see', 'saw', 'seen', 'seeing', 'know', 'knew', 'known',
+    'think', 'thought', 'thinking', 'say', 'said', 'saying', 'tell', 'told', 'telling', 'become', 'became',
+    
+    # Mots de politesse et formules (présents dans blogs)
+    'please', 'thank', 'thanks', 'welcome', 'hello', 'hi', 'bye', 'goodbye', 'regards', 'sincerely'
+}
+
+# Alias pour compatibilité
+STOPWORDS_MINIMAL = STOPWORDS_ENRICHED
+
+# === LEXIQUE STS POUR CODAGE AXIAL ===
+
+# Catégories sociotechniques émergentes identifiées dans le corpus Ethereum
+STS_LEXICON = {
+    'governance': {
+        'dao', 'governance', 'vote', 'voting', 'proposal', 'community', 'foundation', 'board', 'decision',
+        'consensus', 'stakeholder', 'participant', 'member', 'contributor', 'committee', 'council',
+        'decentralized', 'centralized', 'autonomy', 'autonomous', 'democratic', 'participation'
+    },
+    
+    'technical_infrastructure': {
+        'blockchain', 'block', 'chain', 'network', 'protocol', 'node', 'client', 'server', 'peer',
+        'consensus', 'mining', 'miner', 'validator', 'staking', 'proof', 'algorithm', 'hash', 'merkle',
+        'transaction', 'tx', 'gas', 'fee', 'throughput', 'latency', 'scalability', 'performance'
+    },
+    
+    'development_practices': {
+        'development', 'developer', 'coding', 'programming', 'software', 'code', 'implementation',
+        'deployment', 'testing', 'debugging', 'optimization', 'upgrade', 'update', 'version',
+        'github', 'repository', 'commit', 'pull', 'request', 'issue', 'bug', 'feature', 'api'
+    },
+    
+    'security_trust': {
+        'security', 'secure', 'vulnerability', 'attack', 'threat', 'risk', 'audit', 'review',
+        'cryptography', 'encryption', 'signature', 'verification', 'authentication', 'authorization',
+        'trust', 'trustless', 'immutable', 'tamper', 'resistant', 'robust', 'safe', 'safety'
+    },
+    
+    'economic_models': {
+        'economic', 'economy', 'token', 'eth', 'ether', 'currency', 'value', 'price', 'market',
+        'trading', 'exchange', 'liquidity', 'supply', 'demand', 'inflation', 'deflation',
+        'incentive', 'reward', 'penalty', 'cost', 'benefit', 'profit', 'investment', 'funding'
+    },
+    
+    'social_adoption': {
+        'adoption', 'user', 'community', 'ecosystem', 'platform', 'application', 'dapp', 'service',
+        'interface', 'experience', 'usability', 'accessibility', 'education', 'awareness',
+        'mainstream', 'enterprise', 'business', 'industry', 'institution', 'regulation', 'compliance'
+    }
 }
 
 # Longueur minimale des tokens (pour éliminer les artéfacts)

@@ -133,22 +133,27 @@ def clean_text_advanced(text):
 - **Cooccurrences** : ~50,000-100,000 paires (avant filtrage)
 - **Richesse lexicale (TTR)** : ~0.15-0.20
 
-## 🔍 Correctifs critiques v1.1
+## 🔍 Correctifs critiques v1.2 STS
 
-### Problème 1 : Regex email défaillante
-**Avant** : `r'\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b'`
-**Après** : `r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'`
-**Impact** : Suppression correcte des emails, réduction du bruit lexical
+### Problème 1 : Stopwords insuffisantes → Analyse STS polluée
+**Avant** : Liste minimale → "more", "not", "his" dans top 10
+**Après** : Stopwords enrichie (150+ termes) + marqueurs discursifs
+**Impact** : Émergence des termes STS réellement structurants
 
-### Problème 2 : Perte des termes techniques
-**Avant** : Suppression aveugle avec `re.sub(r'\d+', '', text)`
-**Après** : Sauvegarde temporaire des termes crypto + restauration
-**Impact** : Préservation de EIP1559, web3, layer2, etc.
+### Problème 2 : Troncature "thereum" au lieu d'"ethereum"  
+**Avant** : Nettoyage destructif sur termes critiques
+**Après** : Sauvegarde préventive des termes STS + crypto avant ponctuation
+**Impact** : Préservation intégrale du vocabulaire sociotechnique
 
-### Problème 3 : Paramètres dispersés
-**Avant** : Valeurs codées en dur dans chaque script
-**Après** : Centralisation dans `config.py`
-**Impact** : Reproductibilité et exploration paramétrique facilités
+### Problème 3 : Absence de catégorisation STS
+**Avant** : Fréquences brutes sans orientation analytique
+**Après** : Lexique STS intégré (6 catégories) + export enrichi
+**Impact** : Codage axial direct, prêt pour théorie ancrée
+
+### Nouveauté v1.2 : Pipeline STS complet
+- **Lexique sociotechnique** : governance, technical_infrastructure, security_trust, etc.
+- **Export enrichi** : `word_frequencies_sts.csv` avec catégories
+- **Affichage orienté** : Top termes par domaine STS pour codage axial
 
 ## 🎯 Vers la théorie ancrée
 
