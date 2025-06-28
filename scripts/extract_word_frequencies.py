@@ -46,58 +46,68 @@ COMPOUND_EXPRESSIONS = {
 
 def preserve_compound_expressions(text):
     """
-    Préserve les expressions composées importantes avant tokenisation
+    Préserve les expressions composées importantes AVANT toute modification
+    
+    CORRECTION v1.9 : Préservation AVANT minuscules pour éviter fragmentation
     
     Args:
-        text (str): Texte d'entrée
+        text (str): Texte d'entrée ORIGINAL (avec majuscules)
         
     Returns:
-        str: Texte avec expressions composées préservées
+        str: Texte avec expressions composées préservées ET minuscules
     """
-    # Conversion préalable en minuscules pour la détection
-    text_lower = text.lower()
+    # ÉTAPE 1 : Préservation expressions composées sur texte ORIGINAL
+    text_preserved = text
     
-    # Remplacement des expressions composées par des tokens uniques
+    # Remplacement des expressions composées (toutes variantes de casse)
     for compound, replacement in COMPOUND_EXPRESSIONS.items():
-        text_lower = text_lower.replace(compound, replacement)
+        # Recherche insensible à la casse mais remplacement exact
+        import re
+        pattern = re.compile(re.escape(compound), re.IGNORECASE)
+        text_preserved = pattern.sub(replacement, text_preserved)
+    
+    # ÉTAPE 2 : Conversion en minuscules APRÈS préservation
+    text_lower = text_preserved.lower()
     
     return text_lower
 
-def clean_text_v18_fixed(text):
+def clean_text_v19_majuscules_fixed(text):
     """
-    Nettoyage v1.8 - CORRECTION MAJUSCULES
+    Nettoyage v1.9 - CORRECTION DÉFINITIVE MAJUSCULES
     
-    CORRECTIONS :
-    - Préservation expressions composées AVANT minuscules
-    - Suppression propre URLs/emails SANS casser les mots
-    - Conversion minuscules APRÈS préservation
+    CORRECTIONS CRITIQUES v1.9 :
+    - Préservation expressions composées SUR TEXTE ORIGINAL (avec majuscules)
+    - Suppression URLs/emails SANS fragmenter les mots
+    - Conversion minuscules EN DERNIER pour éviter "thereum"/"oundation"
     
     Args:
-        text (str): Texte brut à nettoyer
+        text (str): Texte brut à nettoyer (AVEC majuscules originales)
         
     Returns:
-        str: Texte nettoyé avec expressions préservées
+        str: Texte nettoyé avec expressions préservées et mots complets
     """
     if not text:
         return ""
     
-    # ÉTAPE 1 : Préservation des expressions composées AVANT toute modification
-    text = preserve_compound_expressions(text)
+    # ÉTAPE 1 : Suppression des éléments techniques AVANT préservation
+    # (pour éviter qu'ils interfèrent avec la détection d'expressions)
     
-    # ÉTAPE 2 : Suppression des éléments techniques (URLs, emails, adresses crypto)
     # URLs complètes
-    text = re.sub(r'https?://[^\s]+', ' ', text)
+    text_clean = re.sub(r'https?://[^\s]+', ' ', text)
     
     # Emails 
-    text = re.sub(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', ' ', text)
+    text_clean = re.sub(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', ' ', text_clean)
     
     # Adresses Ethereum (0x...)
-    text = re.sub(r'0x[a-fA-F0-9]{40,}', ' ', text)
+    text_clean = re.sub(r'0x[a-fA-F0-9]{40,}', ' ', text_clean)
     
-    # ÉTAPE 3 : Normalisation des espaces multiples
-    text = re.sub(r'\s+', ' ', text).strip()
+    # ÉTAPE 2 : Préservation expressions composées SUR TEXTE AVEC MAJUSCULES
+    text_preserved = preserve_compound_expressions(text_clean)
     
-    return text
+    # ÉTAPE 3 : Normalisation espaces (déjà en minuscules après préservation)
+    text_final = re.sub(r'\s+', ' ', text_preserved).strip()
+    
+    return text_final
 
 def tokenize_with_punctuation_removal_v18(text):
     """
@@ -149,11 +159,12 @@ def main():
     """
     Pipeline principal v1.8 - CORRECTION MAJUSCULES ET EXPRESSIONS
     """
-    print("=== Extraction des fréquences lexicales v1.8 CORRECTION MAJUSCULES ===")
-    print("CORRECTIONS v1.8 :")
-    print("- Préservation expressions composées (zero_knowledge, ethereum_foundation)")
-    print("- Correction problème majuscules (thereum → ethereum, oundation → foundation)")
-    print("- Nettoyage amélioré préservant vocabulaire technique")
+    print("=== Extraction des fréquences lexicales v1.9 CORRECTION DÉFINITIVE MAJUSCULES ===")
+    print("CORRECTIONS CRITIQUES v1.9 :")
+    print("- Préservation expressions composées SUR TEXTE ORIGINAL (avant minuscules)")
+    print("- Correction définitive : ethereum complet, foundation complet")
+    print("- Affichage étendu 150 mots pour calibrage stopwords/expressions")
+    print("- Pipeline robuste : nettoyage → préservation → minuscules")
     
     # Vérification de l'existence du dossier
     if not os.path.exists(DATA_DIR):
@@ -173,8 +184,8 @@ def main():
                 with open(file_path, 'r', encoding='utf-8') as file:
                     text = file.read()
                     
-                    # Pipeline v1.8 corrigé
-                    cleaned_text = clean_text_v18_fixed(text)
+                    # Pipeline v1.9 - correction définitive majuscules
+                    cleaned_text = clean_text_v19_majuscules_fixed(text)
                     words = tokenize_with_punctuation_removal_v18(cleaned_text)
                     all_words.extend(words)
                     
@@ -218,7 +229,7 @@ def main():
     
     # Export CSV
     df = pd.DataFrame(word_data)
-    output_path = os.path.join(CSV_OUTPUT_DIR, 'word_frequencies_sts_v18_corrected.csv')
+    output_path = os.path.join(CSV_OUTPUT_DIR, 'word_frequencies_sts_v19_majuscules_fixed.csv')
     df.to_csv(output_path, index=False, encoding='utf-8')
     
     print(f"Résultats exportés: {output_path}")
@@ -240,14 +251,14 @@ def main():
                 print(f"  {word_info['word']}: {word_info['absolute_frequency']}")
             print()
     
-    # Top 50 général avec correction expressions composées
-    print(f"=== TOP 50 GÉNÉRAL (v1.8 CORRECTIONS - EXPRESSIONS COMPOSÉES) ===")
-    for i, word_info in enumerate(word_data[:50], 1):
+    # Top 150 général - AFFICHAGE ÉTENDU pour calibrage
+    print(f"=== TOP 150 GÉNÉRAL (v1.9 MAJUSCULES FIXES - EXPRESSIONS COMPOSÉES) ===")
+    for i, word_info in enumerate(word_data[:150], 1):
         category_display = word_info['sts_category'] if word_info['sts_category'] != '—' else '—'
-        print(f"{i:3} | {word_info['word']:<25} | {word_info['absolute_frequency']:6} | {word_info['percentage']:6.2f}% | {category_display}")
+        print(f"{i:3} | {word_info['word']:<30} | {word_info['absolute_frequency']:6} | {word_info['percentage']:6.2f}% | {category_display}")
     
     # Diagnostic expressions composées
-    print(f"\n=== DIAGNOSTIC EXPRESSIONS COMPOSÉES v1.8 ===")
+    print(f"\n=== DIAGNOSTIC EXPRESSIONS COMPOSÉES v1.9 ===")
     compound_found = []
     for compound, replacement in COMPOUND_EXPRESSIONS.items():
         if replacement in word_frequencies:
@@ -256,7 +267,10 @@ def main():
             print(f"✅ '{compound}' → '{replacement}': {count} occurrences")
     
     if not compound_found:
-        print("⚠️  Aucune expression composée détectée - vérifier préservation")
+        print("⚠️  PROBLÈME : Aucune expression composée détectée")
+        print("    → Vérifier preserve_compound_expressions()")
+    else:
+        print(f"✅ {len(compound_found)} expressions composées préservées avec succès")
     
     # Vérification ethereum/foundation
     ethereum_variants = [word for word in word_frequencies.keys() if 'ethereum' in word or 'thereum' in word]
@@ -271,7 +285,7 @@ def main():
         print(f"   {variant}: {word_frequencies[variant]}")
     
     # Statistiques globales
-    print(f"\n=== STATISTIQUES GLOBALES v1.8 ===")
+    print(f"\n=== STATISTIQUES GLOBALES v1.9 - CORRECTION MAJUSCULES DÉFINITIVE ===")
     print(f"Vocabulaire unique: {unique_words:,} termes")
     print(f"Tokens totaux: {total_words:,}")
     print(f"Richesse lexicale (TTR): {ttr:.4f}")

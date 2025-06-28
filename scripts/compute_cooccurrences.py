@@ -46,34 +46,43 @@ COMPOUND_EXPRESSIONS = {
 
 def preserve_compound_expressions(text):
     """
-    Préserve les expressions composées importantes avant tokenisation
-    """
-    text_lower = text.lower()
+    Préserve les expressions composées importantes AVANT minuscules
     
+    CORRECTION v1.9 synchronisée avec extract_word_frequencies
+    """
+    # Préservation expressions composées sur texte ORIGINAL
+    text_preserved = text
+    
+    # Remplacement insensible à la casse
     for compound, replacement in COMPOUND_EXPRESSIONS.items():
-        text_lower = text_lower.replace(compound, replacement)
+        import re
+        pattern = re.compile(re.escape(compound), re.IGNORECASE)
+        text_preserved = pattern.sub(replacement, text_preserved)
+    
+    # Conversion minuscules APRÈS préservation
+    text_lower = text_preserved.lower()
     
     return text_lower
 
-def clean_text_v18_cooccurrence(text):
+def clean_text_v19_cooccurrence(text):
     """
-    Nettoyage harmonisé avec extract_word_frequencies v1.8
+    Nettoyage harmonisé avec extract_word_frequencies v1.9
     """
     if not text:
         return ""
     
-    # Préservation des expressions composées AVANT modification
-    text = preserve_compound_expressions(text)
+    # Suppression URLs/emails AVANT préservation
+    text_clean = re.sub(r'https?://[^\s]+', ' ', text)
+    text_clean = re.sub(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', ' ', text_clean)
+    text_clean = re.sub(r'0x[a-fA-F0-9]{40,}', ' ', text_clean)
     
-    # Suppression URLs, emails, adresses crypto
-    text = re.sub(r'https?://[^\s]+', ' ', text)
-    text = re.sub(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', ' ', text)
-    text = re.sub(r'0x[a-fA-F0-9]{40,}', ' ', text)
+    # Préservation expressions composées SUR TEXTE AVEC MAJUSCULES
+    text_preserved = preserve_compound_expressions(text_clean)
     
     # Normalisation espaces
-    text = re.sub(r'\s+', ' ', text).strip()
+    text_final = re.sub(r'\s+', ' ', text_preserved).strip()
     
-    return text
+    return text_final
 
 def tokenize_v18_cooccurrence(text):
     """
@@ -120,10 +129,11 @@ def main():
     """
     Pipeline principal de calcul des cooccurrences v1.8 - CORRECTION MAJUSCULES
     """
-    print("=== Calcul des cooccurrences lexicales v1.8 CORRECTION MAJUSCULES ===")
+    print("=== Calcul des cooccurrences lexicales v1.9 CORRECTION DÉFINITIVE MAJUSCULES ===")
     print(f"Fenêtre glissante: {COOCCURRENCE_WINDOW_SIZE} mots")
     print(f"Seuil minimal: {COOCCURRENCE_MIN_FREQUENCY} occurrences")
-    print("CORRECTIONS v1.8 : preservation ethereum/foundation + expressions composées")
+    print("CORRECTIONS v1.9 : préservation expressions composées SUR TEXTE ORIGINAL")
+    print("Affichage étendu des cooccurrences pour calibrage")
     
     if not os.path.exists(DATA_DIR):
         print(f"Erreur: Le dossier {DATA_DIR} n'existe pas.")
@@ -141,8 +151,8 @@ def main():
                 with open(file_path, 'r', encoding='utf-8') as file:
                     text = file.read()
                     
-                    # Pipeline v1.8 harmonisé
-                    cleaned_text = clean_text_v18_cooccurrence(text)
+                    # Pipeline v1.9 - correction définitive majuscules
+                    cleaned_text = clean_text_v19_cooccurrence(text)
                     words = tokenize_v18_cooccurrence(cleaned_text)
                     
                     # Calcul des cooccurrences pour ce document
@@ -185,18 +195,18 @@ def main():
     
     # Export CSV
     df = pd.DataFrame(cooccurrence_data)
-    output_path = os.path.join(CSV_OUTPUT_DIR, 'cooccurrence_pairs_v18_corrected.csv')
+    output_path = os.path.join(CSV_OUTPUT_DIR, 'cooccurrence_pairs_v19_majuscules_fixed.csv')
     df.to_csv(output_path, index=False, encoding='utf-8')
     
     print(f"Résultats exportés: {output_path}")
-    print(f"\nTop 10 des cooccurrences les plus fréquentes:")
-    for item in cooccurrence_data[:10]:
-        print(f"  ({item['word1']}, {item['word2']}): {item['cooccurrence_count']}")
+    print(f"\nTop 50 des cooccurrences les plus fréquentes (calibrage étendu):")
+    for i, item in enumerate(cooccurrence_data[:50], 1):
+        print(f"{i:3} | ({item['word1']}, {item['word2']}): {item['cooccurrence_count']}")
     
     # Diagnostic expressions composées dans cooccurrences
-    print(f"\n=== DIAGNOSTIC EXPRESSIONS COMPOSÉES DANS COOCCURRENCES ===")
+    print(f"\n=== DIAGNOSTIC EXPRESSIONS COMPOSÉES DANS COOCCURRENCES v1.9 ===")
     compound_cooccurrences = [
-        item for item in cooccurrence_data[:20] 
+        item for item in cooccurrence_data[:50] 
         if any('_' in word for word in [item['word1'], item['word2']])
     ]
     
