@@ -26,16 +26,22 @@ Ce pipeline d'analyse discursive computationnelle permet l'extraction et l'analy
 
 ```
 ├── config.py                          # 🆕 Configuration centralisée v1.1
-├── data/
+├── data/                               # 📚 CORPUS SOURCES (non modifiables)
 │   ├── corpus_raw/                     # Données brutes d'extraction
-│   └── corpus_txt/                     # 567 fichiers texte individuels
-├── scripts/
+│   │   ├── individual_articles/        # 567 articles individuels
+│   │   ├── ethereum_blog_articles.csv  # Métadonnées
+│   │   └── ethereum_blog_complete.json # Export complet
+│   └── corpus_txt/                     # 567 fichiers texte nettoyés
+├── scripts/                            # 🛠️ MODULES D'ANALYSE
 │   ├── extract_word_frequencies.py     # 🔄 Module fréquences (v1.1)
 │   ├── compute_cooccurrences.py        # 🔄 Module cooccurrences (v1.1)
 │   ├── visualize_frequencies.py        # Module visualisation fréquences
 │   ├── visualize_lexical_network.py    # Module réseau lexical
 │   └── module_segmentation_corpus.py   # Utilitaire segmentation thématique
-├── outputs/                            # Résultats CSV et visualisations
+├── outputs/                            # 📊 RÉSULTATS D'ANALYSE
+│   ├── csv/                            # Données brutes (CSV)
+│   ├── visualizations/                 # Graphiques et nuages de mots
+│   └── networks/                       # Fichiers réseaux (GraphML)
 ├── notebooks/
 │   └── ETH_Foundation_Master_Pipeline.ipynb  # Notebook interactif
 └── corpus_documentation/               # Documentation d'extraction

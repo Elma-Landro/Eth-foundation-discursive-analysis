@@ -81,13 +81,16 @@ def main():
     
     if success_count == total_scripts:
         print("🎉 ANALYSE COMPLÈTE TERMINÉE AVEC SUCCÈS!")
-        print("\n📁 Résultats disponibles dans le dossier './outputs/':")
-        print("   - word_frequencies.csv (fréquences lexicales)")
-        print("   - cooccurrence_pairs.csv (cooccurrences)")
-        print("   - top_words_bar_chart.png (graphique fréquences)")
-        print("   - wordcloud.png (nuage de mots)")
-        print("   - lexical_network.png (réseau de cooccurrences)")
-        print("   - lexical_network.graphml (export Gephi)")
+        print("\n📁 Résultats disponibles dans l'arborescence './outputs/':")
+        print("   📊 CSV (données brutes):")
+        print("      - outputs/csv/word_frequencies.csv")
+        print("      - outputs/csv/cooccurrence_pairs.csv")
+        print("   📈 Visualisations:")
+        print("      - outputs/visualizations/top_words_bar_chart.png")
+        print("      - outputs/visualizations/wordcloud.png")
+        print("      - outputs/visualizations/lexical_network.png")
+        print("   🌐 Réseaux (export Gephi):")
+        print("      - outputs/networks/lexical_network.graphml")
     else:
         print("⚠️  Analyse incomplète - Vérifiez les erreurs ci-dessus")
     

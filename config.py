@@ -12,12 +12,26 @@ Objectif: Centraliser tous les paramètres modifiables pour faciliter
 import os
 
 # === CHEMINS ET DOSSIERS ===
-DATA_DIR = "./data/corpus_txt"
-OUTPUT_DIR = "./outputs"
+
+# CORPUS SOURCES (non modifiables - reproductibilité)
+CORPUS_TXT_DIR = "./data/corpus_txt"           # Corpus principal nettoyé
+CORPUS_RAW_DIR = "./data/corpus_raw"           # Données brutes d'extraction
 INDIVIDUAL_ARTICLES_DIR = "./data/corpus_raw/individual_articles"
 
-# Création automatique des dossiers de sortie
+# OUTPUTS GÉNÉRÉS (résultats d'analyse)
+OUTPUT_DIR = "./outputs"                       # Dossier principal des résultats
+CSV_OUTPUT_DIR = "./outputs/csv"               # Fichiers CSV (fréquences, cooccurrences)
+VISUALIZATIONS_DIR = "./outputs/visualizations" # Graphiques et réseaux
+NETWORKS_DIR = "./outputs/networks"            # Fichiers de réseaux (GraphML, etc.)
+
+# Création automatique de la structure d'outputs
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+os.makedirs(CSV_OUTPUT_DIR, exist_ok=True)
+os.makedirs(VISUALIZATIONS_DIR, exist_ok=True)
+os.makedirs(NETWORKS_DIR, exist_ok=True)
+
+# Alias pour compatibilité (à utiliser CORPUS_TXT_DIR à l'avenir)
+DATA_DIR = CORPUS_TXT_DIR
 
 # === PARAMÈTRES DE NETTOYAGE TEXTUEL ===
 

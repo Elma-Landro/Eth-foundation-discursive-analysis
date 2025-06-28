@@ -169,7 +169,7 @@ def main():
     
     # Export CSV
     df = pd.DataFrame(cooccurrence_data)
-    output_path = os.path.join(OUTPUT_DIR, 'cooccurrence_pairs.csv')
+    output_path = os.path.join(CSV_OUTPUT_DIR, 'cooccurrence_pairs.csv')
     df.to_csv(output_path, index=False, encoding='utf-8')
     
     print(f"Résultats exportés: {output_path}")

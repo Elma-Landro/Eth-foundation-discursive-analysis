@@ -1,14 +1,18 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 import networkx as nx
+import matplotlib.pyplot as plt
+from matplotlib import cm
+import numpy as np
 import os
+import sys
+sys.path.append('.')
+from config import CSV_OUTPUT_DIR, VISUALIZATIONS_DIR, NETWORKS_DIR, NETWORK_THRESHOLD
 
-# --- SETUP ---
+# Configuration
+INPUT_FILE = os.path.join(CSV_OUTPUT_DIR, 'cooccurrence_pairs.csv')
+THRESHOLD = NETWORK_THRESHOLD  # Seuil depuis config.py
 
-INPUT_FILE = './outputs/cooccurrence_pairs.csv'
-OUTPUT_DIR = './outputs/'
-
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+# Les dossiers sont créés automatiquement par config.py
 
 # --- LOAD DATA ---
 
@@ -17,7 +21,6 @@ df = pd.read_csv(INPUT_FILE)
 # --- FILTER CO-OCCURRENCES ---
 
 # Seuil de fréquence minimale pour garder les liaisons les plus significatives
-THRESHOLD = 5
 df_filtered = df[df['count'] >= THRESHOLD]
 
 # --- BUILD GRAPH ---
@@ -49,11 +52,10 @@ plt.title('Lexical Co-occurrence Network (STS filtered)')
 plt.axis('off')
 plt.tight_layout()
 
-plt.savefig(os.path.join(OUTPUT_DIR, 'lexical_network.png'))
-plt.close()
+# Sauvegarde du graphique
+plt.savefig(os.path.join(VISUALIZATIONS_DIR, 'lexical_network.png'), dpi=300, bbox_inches='tight')
 
-# --- SAVE GRAPH STRUCTURE ---
-
-nx.write_graphml(G, os.path.join(OUTPUT_DIR, 'lexical_network.graphml'))
+# Export au format GraphML (pour Gephi)
+nx.write_graphml(G, os.path.join(NETWORKS_DIR, 'lexical_network.graphml'))
 
 print("Lexical network visualizations generated successfully.")

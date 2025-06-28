@@ -4,11 +4,13 @@ from wordcloud import WordCloud
 import os
 
 # --- SETUP ---
+import sys
+sys.path.append('.')
+from config import CSV_OUTPUT_DIR, VISUALIZATIONS_DIR
 
-INPUT_FILE = './outputs/word_frequencies.csv'
-OUTPUT_DIR = './outputs/'
+INPUT_FILE = os.path.join(CSV_OUTPUT_DIR, 'word_frequencies.csv')
 
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+os.makedirs(VISUALIZATIONS_DIR, exist_ok=True)
 
 # --- LOAD DATA ---
 
@@ -25,7 +27,7 @@ plt.bar(top_words['word'], top_words['frequency'], color='skyblue')
 plt.xticks(rotation=45, ha='right')
 plt.title(f'Top {N} most frequent words (STS filtered)')
 plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_DIR, 'top_words_bar_chart.png'))
+plt.savefig(os.path.join(VISUALIZATIONS_DIR, 'top_words_bar_chart.png'))
 plt.close()
 
 # --- WORD CLOUD ---
@@ -38,7 +40,7 @@ plt.figure(figsize=(16, 8))
 plt.imshow(wordcloud, interpolation='bilinear')
 plt.axis('off')
 plt.title('Word Cloud (STS filtered)')
-plt.savefig(os.path.join(OUTPUT_DIR, 'wordcloud.png'))
+plt.savefig(os.path.join(VISUALIZATIONS_DIR, 'wordcloud.png'))
 plt.close()
 
 print("Visualizations generated successfully.")

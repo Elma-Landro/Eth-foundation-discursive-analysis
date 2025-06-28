@@ -153,7 +153,7 @@ def main():
     ])
     
     # Export CSV
-    output_path = os.path.join(OUTPUT_DIR, 'word_frequencies.csv')
+    output_path = os.path.join(CSV_OUTPUT_DIR, 'word_frequencies.csv')
     df.to_csv(output_path, index=False, encoding='utf-8')
     
     print(f"Résultats exportés: {output_path}")
