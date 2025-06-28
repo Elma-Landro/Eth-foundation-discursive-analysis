@@ -7,3 +7,27 @@ packages = ["cairo", "ffmpeg-full", "freetype", "ghostscript", "glibcLocales", "
 
 [deployment]
 run = ["sh", "-c", "Run discursive analysis"]
+
+[workflows]
+runButton = "Analyse Discursive Complète"
+
+[[workflows.workflow]]
+name = "Analyse Discursive Complète"
+author = 44225636
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python scripts/extract_word_frequencies.py"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python scripts/compute_cooccurrences.py"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python scripts/visualize_frequencies.py"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python scripts/visualize_lexical_network.py"
