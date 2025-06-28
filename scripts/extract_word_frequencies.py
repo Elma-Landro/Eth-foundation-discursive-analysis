@@ -71,41 +71,39 @@ def preserve_compound_expressions(text):
     
     return text_lower
 
-def clean_text_v19_majuscules_fixed(text):
+def clean_text_v20_fragmentation_fixed(text):
     """
-    Nettoyage v1.9 - CORRECTION DÉFINITIVE MAJUSCULES
+    Nettoyage v2.0 - CORRECTION DÉFINITIVE FRAGMENTATION
     
-    CORRECTIONS CRITIQUES v1.9 :
-    - Préservation expressions composées SUR TEXTE ORIGINAL (avec majuscules)
-    - Suppression URLs/emails SANS fragmenter les mots
-    - Conversion minuscules EN DERNIER pour éviter "thereum"/"oundation"
+    NOUVELLE APPROCHE v2.0 :
+    - Préservation expressions composées EN PREMIER (sur texte original)
+    - Suppression technique DOUCE (espaces, pas troncature)
+    - Protection absolue des mots critiques
     
     Args:
         text (str): Texte brut à nettoyer (AVEC majuscules originales)
         
     Returns:
-        str: Texte nettoyé avec expressions préservées et mots complets
+        str: Texte nettoyé sans fragmentation
     """
     if not text:
         return ""
     
-    # ÉTAPE 1 : Suppression des éléments techniques AVANT préservation
-    # (pour éviter qu'ils interfèrent avec la détection d'expressions)
+    # ÉTAPE 1 : Préservation expressions composées EN PREMIER sur texte ORIGINAL
+    text_preserved = preserve_compound_expressions(text)
     
-    # URLs complètes
-    text_clean = re.sub(r'https?://[^\s]+', ' ', text)
+    # ÉTAPE 2 : Suppression technique DOUCE (remplacer par espaces, pas supprimer)
+    # URLs complètes → espaces (pas suppression brutale)
+    text_clean = re.sub(r'https?://[^\s]+', ' ', text_preserved)
     
-    # Emails 
+    # Emails → espaces
     text_clean = re.sub(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', ' ', text_clean)
     
-    # Adresses Ethereum (0x...)
+    # Adresses Ethereum (0x...) → espaces
     text_clean = re.sub(r'0x[a-fA-F0-9]{40,}', ' ', text_clean)
     
-    # ÉTAPE 2 : Préservation expressions composées SUR TEXTE AVEC MAJUSCULES
-    text_preserved = preserve_compound_expressions(text_clean)
-    
-    # ÉTAPE 3 : Normalisation espaces (déjà en minuscules après préservation)
-    text_final = re.sub(r'\s+', ' ', text_preserved).strip()
+    # ÉTAPE 3 : Normalisation espaces multiples
+    text_final = re.sub(r'\s+', ' ', text_clean).strip()
     
     return text_final
 
@@ -184,8 +182,8 @@ def main():
                 with open(file_path, 'r', encoding='utf-8') as file:
                     text = file.read()
                     
-                    # Pipeline v1.9 - correction définitive majuscules
-                    cleaned_text = clean_text_v19_majuscules_fixed(text)
+                    # Pipeline v2.0 - correction définitive fragmentation
+                    cleaned_text = clean_text_v20_fragmentation_fixed(text)
                     words = tokenize_with_punctuation_removal_v18(cleaned_text)
                     all_words.extend(words)
                     

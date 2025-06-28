@@ -64,23 +64,23 @@ def preserve_compound_expressions(text):
     
     return text_lower
 
-def clean_text_v19_cooccurrence(text):
+def clean_text_v20_cooccurrence(text):
     """
-    Nettoyage harmonisé avec extract_word_frequencies v1.9
+    Nettoyage harmonisé avec extract_word_frequencies v2.0 - FRAGMENTATION CORRIGÉE
     """
     if not text:
         return ""
     
-    # Suppression URLs/emails AVANT préservation
-    text_clean = re.sub(r'https?://[^\s]+', ' ', text)
+    # CORRECTION v2.0 : Préservation expressions composées EN PREMIER
+    text_preserved = preserve_compound_expressions(text)
+    
+    # Suppression technique DOUCE (espaces, pas troncature)
+    text_clean = re.sub(r'https?://[^\s]+', ' ', text_preserved)
     text_clean = re.sub(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', ' ', text_clean)
     text_clean = re.sub(r'0x[a-fA-F0-9]{40,}', ' ', text_clean)
     
-    # Préservation expressions composées SUR TEXTE AVEC MAJUSCULES
-    text_preserved = preserve_compound_expressions(text_clean)
-    
     # Normalisation espaces
-    text_final = re.sub(r'\s+', ' ', text_preserved).strip()
+    text_final = re.sub(r'\s+', ' ', text_clean).strip()
     
     return text_final
 
@@ -151,8 +151,8 @@ def main():
                 with open(file_path, 'r', encoding='utf-8') as file:
                     text = file.read()
                     
-                    # Pipeline v1.9 - correction définitive majuscules
-                    cleaned_text = clean_text_v19_cooccurrence(text)
+                    # Pipeline v2.0 - correction définitive fragmentation
+                    cleaned_text = clean_text_v20_cooccurrence(text)
                     words = tokenize_v18_cooccurrence(cleaned_text)
                     
                     # Calcul des cooccurrences pour ce document
