@@ -1,13 +1,12 @@
 
 """
-Extraction des fréquences lexicales - Version 1.7 NETTOYAGE MINIMAL
+Extraction des fréquences lexicales - Version 1.8 CORRECTION MAJUSCULES
 Ethereum Foundation Discursive Analysis
 
-CORRECTION RADICALE v1.7 :
-- Nettoyage MINIMAL (URLs uniquement)
-- Préservation ABSOLUE de la ponctuation contextuelle
-- Tokenisation sur espaces naturels UNIQUEMENT
-- Élimination exclusive des artefacts identifiés
+CORRECTION MAJUSCULES v1.8 :
+- Préservation des mots complets avant minuscules 
+- Détection expressions composées (zero knowledge, ethereum foundation)
+- Correction du problème "thereum", "oundation"
 """
 
 import os
@@ -20,25 +19,72 @@ sys.path.append('.')
 from config import *
 from sts_lexicon_corrected import STS_LEXICON_CORRECTED
 
-def clean_text_minimal_v17(text):
+# Expressions composées à préserver comme entités uniques
+COMPOUND_EXPRESSIONS = {
+    'zero knowledge': 'zero_knowledge',
+    'ethereum foundation': 'ethereum_foundation', 
+    'proof of stake': 'proof_of_stake',
+    'proof of work': 'proof_of_work',
+    'smart contract': 'smart_contract',
+    'smart contracts': 'smart_contracts',
+    'layer 2': 'layer_2',
+    'layer two': 'layer_2',
+    'web 3': 'web_3',
+    'web3': 'web_3',
+    'hard fork': 'hard_fork',
+    'soft fork': 'soft_fork',
+    'beacon chain': 'beacon_chain',
+    'execution layer': 'execution_layer',
+    'consensus layer': 'consensus_layer',
+    'merkle tree': 'merkle_tree',
+    'virtual machine': 'virtual_machine',
+    'gas fee': 'gas_fee',
+    'gas fees': 'gas_fees',
+    'transaction fee': 'transaction_fee',
+    'transaction fees': 'transaction_fees'
+}
+
+def preserve_compound_expressions(text):
     """
-    Nettoyage MINIMAL v1.7 - Préservation maximale du vocabulaire
+    Préserve les expressions composées importantes avant tokenisation
     
-    PRINCIPE : Ne supprimer QUE les éléments non-discursifs évidents
-    - URLs, emails, adresses crypto
-    - AUCUNE manipulation de ponctuation
-    - AUCUNE normalisation agressive
+    Args:
+        text (str): Texte d'entrée
+        
+    Returns:
+        str: Texte avec expressions composées préservées
+    """
+    # Conversion préalable en minuscules pour la détection
+    text_lower = text.lower()
+    
+    # Remplacement des expressions composées par des tokens uniques
+    for compound, replacement in COMPOUND_EXPRESSIONS.items():
+        text_lower = text_lower.replace(compound, replacement)
+    
+    return text_lower
+
+def clean_text_v18_fixed(text):
+    """
+    Nettoyage v1.8 - CORRECTION MAJUSCULES
+    
+    CORRECTIONS :
+    - Préservation expressions composées AVANT minuscules
+    - Suppression propre URLs/emails SANS casser les mots
+    - Conversion minuscules APRÈS préservation
     
     Args:
         text (str): Texte brut à nettoyer
         
     Returns:
-        str: Texte avec nettoyage minimal
+        str: Texte nettoyé avec expressions préservées
     """
     if not text:
         return ""
     
-    # Suppression EXCLUSIVE des éléments techniques non-discursifs
+    # ÉTAPE 1 : Préservation des expressions composées AVANT toute modification
+    text = preserve_compound_expressions(text)
+    
+    # ÉTAPE 2 : Suppression des éléments techniques (URLs, emails, adresses crypto)
     # URLs complètes
     text = re.sub(r'https?://[^\s]+', ' ', text)
     
@@ -48,25 +94,17 @@ def clean_text_minimal_v17(text):
     # Adresses Ethereum (0x...)
     text = re.sub(r'0x[a-fA-F0-9]{40,}', ' ', text)
     
-    # Conversion en minuscules SEULEMENT
-    text = text.lower()
-    
-    # Normalisation des espaces multiples UNIQUEMENT
+    # ÉTAPE 3 : Normalisation des espaces multiples
     text = re.sub(r'\s+', ' ', text).strip()
     
     return text
 
-def tokenize_with_punctuation_removal_v17(text):
+def tokenize_with_punctuation_removal_v18(text):
     """
-    Tokenisation v1.7 avec suppression ponctuation PAR TOKEN
-    
-    APPROCHE NOUVELLE :
-    - Tokenisation sur espaces naturels
-    - Nettoyage ponctuation PAR MOT (pas sur tout le texte)
-    - Préservation des mots complets avant fragmentation
+    Tokenisation v1.8 avec suppression ponctuation et filtrage
     
     Args:
-        text (str): Texte à tokeniser
+        text (str): Texte nettoyé
         
     Returns:
         list: Liste des tokens valides
@@ -74,89 +112,48 @@ def tokenize_with_punctuation_removal_v17(text):
     if not text:
         return []
     
-    # Tokenisation sur espaces NATURELS
-    raw_tokens = text.split()
+    # Suppression de la ponctuation
+    text = text.translate(str.maketrans('', '', string.punctuation))
     
-    # PROTECTION ABSOLUE des termes critiques
-    PROTECTED_TERMS = {
-        'ethereum', 'bitcoin', 'blockchain', 'decentralized', 'protocol',
-        'consensus', 'validator', 'staking', 'governance', 'security',
-        'development', 'research', 'infrastructure', 'network', 'client',
-        'pyethereum', 'web3', 'defi', 'dapp', 'contract', 'smart'
-    }
+    # Suppression des chiffres isolés (mais pas les termes comme layer_2)
+    text = re.sub(r'\b\d+\b', ' ', text)
     
-    # Liste d'exclusion PRÉCISE des artefacts identifiés
-    EXPLICIT_ARTIFACTS = {
-        'thereum', 'itcoin', 'lockchain', 'ecentralized',  # troncatures identifiées
-        'nn', 'nnhe', 'nnnn', 'nnn', 'nnot', 'nnd',       # fragments nn
-        'ndate', 'nurl', 'nauteur', 'titre', 'evcon',     # artefacts métadonnées
-        'th', 're', 'as', 've', 'll', 'et', 'he', 'it', 'an', 'in', 'on', 'at', 'be', 'to'  # fragments courts
-    }
+    # Tokenisation par espaces
+    words = text.split()
     
-    valid_tokens = []
+    # Filtrage : longueur minimale et stopwords
+    filtered_words = [
+        word for word in words 
+        if len(word) > MIN_TOKEN_LENGTH and word not in STOPWORDS_MINIMAL
+    ]
     
-    for raw_token in raw_tokens:
-        # Suppression ponctuation PAR TOKEN (préserve les mots complets)
-        cleaned_token = re.sub(r'[^\w]', '', raw_token)
-        
-        # Filtrage des tokens vides après nettoyage
-        if not cleaned_token:
-            continue
-            
-        # PROTECTION ABSOLUE : termes critiques toujours inclus
-        if cleaned_token in PROTECTED_TERMS:
-            valid_tokens.append(cleaned_token)
-            continue
-            
-        # Élimination des artefacts EXPLICITES identifiés
-        if cleaned_token in EXPLICIT_ARTIFACTS:
-            continue
-            
-        # Longueur minimale stricte
-        if len(cleaned_token) < 3:
-            continue
-            
-        # Stopwords (sauf termes protégés déjà traités)
-        if cleaned_token in STOPWORDS_ENRICHED:
-            continue
-            
-        # Validation alphabétique stricte
-        if not cleaned_token.isalpha():
-            continue
-            
-        # Filtrage spécifique patterns nn suspects
-        if cleaned_token.startswith('nn') and len(cleaned_token) < 8:
-            continue
-        if cleaned_token.endswith('nn') and len(cleaned_token) < 8:
-            continue
-        if cleaned_token.count('nn') > 1 and len(cleaned_token) < 10:
-            continue
-            
-        valid_tokens.append(cleaned_token)
-    
-    return valid_tokens
+    return filtered_words
 
-def categorize_sts_official(word_frequencies):
+def categorize_word_with_sts_corrected(word, sts_lexicon):
     """
-    Catégorisation STS selon la grille officielle (9 catégories)
+    Catégorisation STS d'un mot selon le lexique corrigé
+    
+    Args:
+        word (str): Mot à catégoriser
+        sts_lexicon (dict): Lexique STS structuré
+        
+    Returns:
+        str: Catégorie STS ou '—' si non catégorisé
     """
-    sts_categorized = {}
-    
-    for category, terms in STS_LEXICON_CORRECTED.items():
-        sts_categorized[category] = []
-        for word, freq in word_frequencies.most_common():
-            if word in terms:
-                sts_categorized[category].append((word, freq))
-    
-    return sts_categorized, STS_LEXICON_CORRECTED
+    for category, word_set in sts_lexicon.items():
+        if word in word_set:
+            return category
+    return '—'
 
 def main():
     """
-    Pipeline principal v1.7 - NETTOYAGE MINIMAL
+    Pipeline principal v1.8 - CORRECTION MAJUSCULES ET EXPRESSIONS
     """
-    print("=== Extraction des fréquences lexicales v1.7 NETTOYAGE MINIMAL ===")
-    print("CORRECTION RADICALE : nettoyage minimal, préservation maximale vocabulaire")
-    print(f"Objectif : récupérer les 3,600+ occurrences 'ethereum' perdues")
+    print("=== Extraction des fréquences lexicales v1.8 CORRECTION MAJUSCULES ===")
+    print("CORRECTIONS v1.8 :")
+    print("- Préservation expressions composées (zero_knowledge, ethereum_foundation)")
+    print("- Correction problème majuscules (thereum → ethereum, oundation → foundation)")
+    print("- Nettoyage amélioré préservant vocabulaire technique")
     
     # Vérification de l'existence du dossier
     if not os.path.exists(DATA_DIR):
@@ -176,9 +173,9 @@ def main():
                 with open(file_path, 'r', encoding='utf-8') as file:
                     text = file.read()
                     
-                    # Pipeline MINIMAL v1.7
-                    cleaned_text = clean_text_minimal_v17(text)
-                    words = tokenize_with_punctuation_removal_v17(cleaned_text)
+                    # Pipeline v1.8 corrigé
+                    cleaned_text = clean_text_v18_fixed(text)
+                    words = tokenize_with_punctuation_removal_v18(cleaned_text)
                     all_words.extend(words)
                     
                     file_count += 1
@@ -193,93 +190,93 @@ def main():
     
     # Calcul des fréquences
     word_frequencies = Counter(all_words)
+    total_words = len(all_words)
+    unique_words = len(word_frequencies)
+    ttr = unique_words / total_words if total_words > 0 else 0
     
-    # Catégorisation STS
-    sts_categorized, sts_lexicon_official = categorize_sts_official(word_frequencies)
+    # Préparation des données pour export avec catégorisation STS
+    word_data = []
+    sts_word_count = 0
     
-    # Préparation des données pour export
-    sts_category_map = {}
-    for category, terms in sts_lexicon_official.items():
-        for term in terms:
-            sts_category_map[term] = category
+    for word, count in word_frequencies.items():
+        frequency = count / total_words
+        category = categorize_word_with_sts_corrected(word, STS_LEXICON_CORRECTED)
+        
+        if category != '—':
+            sts_word_count += count
+        
+        word_data.append({
+            'word': word,
+            'absolute_frequency': count,
+            'relative_frequency': frequency,
+            'percentage': frequency * 100,
+            'sts_category': category
+        })
     
-    df = pd.DataFrame([
-        {
-            'word': word, 
-            'frequency': freq, 
-            'relative_frequency': freq/len(all_words),
-            'sts_category': sts_category_map.get(word, '—')
-        }
-        for word, freq in word_frequencies.most_common()
-    ])
+    # Tri par fréquence décroissante
+    word_data.sort(key=lambda x: x['absolute_frequency'], reverse=True)
     
     # Export CSV
-    output_path = os.path.join(CSV_OUTPUT_DIR, 'word_frequencies_sts_v17_minimal.csv')
+    df = pd.DataFrame(word_data)
+    output_path = os.path.join(CSV_OUTPUT_DIR, 'word_frequencies_sts_v18_corrected.csv')
     df.to_csv(output_path, index=False, encoding='utf-8')
     
     print(f"Résultats exportés: {output_path}")
     
-    # Affichage des termes STS par catégorie
-    print(f"\n=== ANALYSE STS OFFICIELLE (v1.7 MINIMAL) ===")
-    for category, terms_list in sts_categorized.items():
-        if terms_list:
-            print(f"\n🔹 {category.upper()} ({len(terms_list)} termes):")
-            for word, freq in terms_list[:10]:
-                print(f"  {word}: {freq}")
+    # Analyse STS par catégorie
+    print(f"\n=== ANALYSE STS OFFICIELLE (v1.8 CORRECTIONS) ===\n")
     
-    # Top 50 général
-    print(f"\n=== TOP 50 GÉNÉRAL (v1.7 MINIMAL - RÉCUPÉRATION ETHEREUM) ===")
-    for i, (word, freq) in enumerate(word_frequencies.most_common(50), 1):
-        category = sts_category_map.get(word, '—')
-        pct = freq/len(all_words)*100
-        print(f"{i:3d} | {word:<25} | {freq:>6} | {pct:>6.2f}% | {category}")
+    categories_analysis = {}
+    for category in STS_LEXICON_CORRECTED.keys():
+        category_words = [item for item in word_data if item['sts_category'] == category]
+        category_words.sort(key=lambda x: x['absolute_frequency'], reverse=True)
+        categories_analysis[category] = category_words
     
-    # DIAGNOSTIC CRITIQUE v1.7
-    print(f"\n=== DIAGNOSTIC CRITIQUE v1.7 - RÉCUPÉRATION ETHEREUM ===")
+    # Affichage par catégorie
+    for category, words in categories_analysis.items():
+        if words:
+            print(f"🔹 {category.upper()} ({len(words)} termes):")
+            for i, word_info in enumerate(words[:10]):
+                print(f"  {word_info['word']}: {word_info['absolute_frequency']}")
+            print()
     
-    # Vérification ETHEREUM
-    ethereum_freq = word_frequencies.get('ethereum', 0)
-    thereum_freq = word_frequencies.get('thereum', 0)
+    # Top 50 général avec correction expressions composées
+    print(f"=== TOP 50 GÉNÉRAL (v1.8 CORRECTIONS - EXPRESSIONS COMPOSÉES) ===")
+    for i, word_info in enumerate(word_data[:50], 1):
+        category_display = word_info['sts_category'] if word_info['sts_category'] != '—' else '—'
+        print(f"{i:3} | {word_info['word']:<25} | {word_info['absolute_frequency']:6} | {word_info['percentage']:6.2f}% | {category_display}")
     
-    print(f"🔍 ETHEREUM complet: {ethereum_freq} occurrences")
-    print(f"⚠️  'thereum' tronqué: {thereum_freq} occurrences")
+    # Diagnostic expressions composées
+    print(f"\n=== DIAGNOSTIC EXPRESSIONS COMPOSÉES v1.8 ===")
+    compound_found = []
+    for compound, replacement in COMPOUND_EXPRESSIONS.items():
+        if replacement in word_frequencies:
+            count = word_frequencies[replacement]
+            compound_found.append((compound, replacement, count))
+            print(f"✅ '{compound}' → '{replacement}': {count} occurrences")
     
-    if ethereum_freq > 3000:
-        print("✅ SUCCÈS : Récupération massive du vocabulaire ethereum !")
-    elif ethereum_freq > thereum_freq:
-        print("✅ PROGRÈS : ethereum > thereum, mais récupération incomplète")
-    else:
-        print("❌ ÉCHEC : Troncatures persistent, approche à revoir")
-        
-    # Top ethereum dans classement
-    top_20 = word_frequencies.most_common(20)
-    ethereum_rank = None
-    for i, (word, freq) in enumerate(top_20, 1):
-        if word == 'ethereum':
-            ethereum_rank = i
-            break
+    if not compound_found:
+        print("⚠️  Aucune expression composée détectée - vérifier préservation")
     
-    if ethereum_rank:
-        print(f"📊 ETHEREUM classé #{ethereum_rank} dans le top 20")
-    else:
-        print(f"📊 ETHEREUM absent du top 20")
+    # Vérification ethereum/foundation
+    ethereum_variants = [word for word in word_frequencies.keys() if 'ethereum' in word or 'thereum' in word]
+    foundation_variants = [word for word in word_frequencies.keys() if 'foundation' in word or 'oundation' in word]
     
-    # Famille ethereum complète
-    ethereum_family = [(word, freq) for word, freq in word_frequencies.items() if 'ethereum' in word]
-    print(f"\n🔍 Famille ETHEREUM détectée ({len(ethereum_family)} variantes):")
-    for word, freq in sorted(ethereum_family, key=lambda x: x[1], reverse=True)[:10]:
-        print(f"   {word}: {freq}")
+    print(f"\n🔍 Variantes ETHEREUM détectées ({len(ethereum_variants)}):")
+    for variant in sorted(ethereum_variants, key=lambda x: word_frequencies[x], reverse=True)[:10]:
+        print(f"   {variant}: {word_frequencies[variant]}")
+    
+    print(f"\n🔍 Variantes FOUNDATION détectées ({len(foundation_variants)}):")
+    for variant in sorted(foundation_variants, key=lambda x: word_frequencies[x], reverse=True)[:10]:
+        print(f"   {variant}: {word_frequencies[variant]}")
     
     # Statistiques globales
-    print(f"\n=== STATISTIQUES GLOBALES v1.7 ===")
-    print(f"Vocabulaire unique: {len(word_frequencies):,} termes")
-    print(f"Tokens totaux: {len(all_words):,}")
-    print(f"Richesse lexicale (TTR): {len(word_frequencies)/len(all_words):.4f}")
-    
-    total_sts_freq = sum(freq for terms_list in sts_categorized.values() 
-                        for _, freq in terms_list)
-    print(f"Fréquence STS totale: {total_sts_freq:,}")
-    print(f"Part STS du corpus: {total_sts_freq/len(all_words)*100:.2f}%")
+    print(f"\n=== STATISTIQUES GLOBALES v1.8 ===")
+    print(f"Vocabulaire unique: {unique_words:,} termes")
+    print(f"Tokens totaux: {total_words:,}")
+    print(f"Richesse lexicale (TTR): {ttr:.4f}")
+    print(f"Fréquence STS totale: {sts_word_count:,}")
+    print(f"Part STS du corpus: {(sts_word_count/total_words)*100:.2f}%")
 
 if __name__ == "__main__":
     main()

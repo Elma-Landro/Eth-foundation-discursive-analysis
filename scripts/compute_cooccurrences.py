@@ -1,13 +1,12 @@
 
 """
-Calcul des cooccurrences lexicales - Version 1.1
+Calcul des cooccurrences lexicales - Version 1.8 EXPRESSIONS COMPOSÉES
 Ethereum Foundation Discursive Analysis
 
-Corrections v1.1 :
-- Correction regex email (échappement \b)
-- Préservation des termes techniques crypto
-- Intégration configuration centralisée
-- Optimisation de la fenêtre glissante
+Corrections v1.8 :
+- Synchronisation avec extract_word_frequencies v1.8
+- Préservation expressions composées dans cooccurrences
+- Correction problème majuscules/fragmentation
 """
 
 import os
@@ -20,75 +19,92 @@ import sys
 sys.path.append('.')
 from config import *
 
-def clean_text_advanced(text):
+# Expressions composées à préserver (synchronisé avec extract_word_frequencies)
+COMPOUND_EXPRESSIONS = {
+    'zero knowledge': 'zero_knowledge',
+    'ethereum foundation': 'ethereum_foundation', 
+    'proof of stake': 'proof_of_stake',
+    'proof of work': 'proof_of_work',
+    'smart contract': 'smart_contract',
+    'smart contracts': 'smart_contracts',
+    'layer 2': 'layer_2',
+    'layer two': 'layer_2',
+    'web 3': 'web_3',
+    'web3': 'web_3',
+    'hard fork': 'hard_fork',
+    'soft fork': 'soft_fork',
+    'beacon chain': 'beacon_chain',
+    'execution layer': 'execution_layer',
+    'consensus layer': 'consensus_layer',
+    'merkle tree': 'merkle_tree',
+    'virtual machine': 'virtual_machine',
+    'gas fee': 'gas_fee',
+    'gas fees': 'gas_fees',
+    'transaction fee': 'transaction_fee',
+    'transaction fees': 'transaction_fees'
+}
+
+def preserve_compound_expressions(text):
     """
-    Nettoyage textuel avancé - Version harmonisée avec extract_word_frequencies.py
+    Préserve les expressions composées importantes avant tokenisation
     """
-    text = text.lower()
-
-    # Suppression des URLs
-    text = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\,]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', text)
-
-    # CORRECTION CRITIQUE v1.1 : Regex email corrigée
-    text = re.sub(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', '', text)
-
-    # Suppression des adresses Ethereum
-    text = re.sub(r'0x[a-fA-F0-9]{40,}', '', text)
-
-    # Suppression de la ponctuation
-    text = text.translate(str.maketrans('', '', string.punctuation))
+    text_lower = text.lower()
     
-    # CORRECTION CRITIQUE v1.1 : Préservation des termes techniques
-    if PRESERVE_CRYPTO_TERMS:
-        temp_replacements = {}
-        for i, term in enumerate(CRYPTO_TECHNICAL_TERMS):
-            placeholder = f"CRYPTOTERM{i}PLACEHOLDER"
-            if term in text:
-                text = text.replace(term, placeholder)
-                temp_replacements[placeholder] = term
+    for compound, replacement in COMPOUND_EXPRESSIONS.items():
+        text_lower = text_lower.replace(compound, replacement)
     
-    # Suppression des chiffres isolés
-    text = re.sub(r'\b\d+\b', '', text)
-    
-    # Restauration des termes techniques
-    if PRESERVE_CRYPTO_TERMS:
-        for placeholder, original_term in temp_replacements.items():
-            text = text.replace(placeholder, original_term)
+    return text_lower
 
-    # Nettoyage des espaces
+def clean_text_v18_cooccurrence(text):
+    """
+    Nettoyage harmonisé avec extract_word_frequencies v1.8
+    """
+    if not text:
+        return ""
+    
+    # Préservation des expressions composées AVANT modification
+    text = preserve_compound_expressions(text)
+    
+    # Suppression URLs, emails, adresses crypto
+    text = re.sub(r'https?://[^\s]+', ' ', text)
+    text = re.sub(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', ' ', text)
+    text = re.sub(r'0x[a-fA-F0-9]{40,}', ' ', text)
+    
+    # Normalisation espaces
     text = re.sub(r'\s+', ' ', text).strip()
-
+    
     return text
 
-def tokenize_strict(text):
+def tokenize_v18_cooccurrence(text):
     """
-    Tokenisation stricte harmonisée
+    Tokenisation harmonisée v1.8
     """
+    if not text:
+        return []
+    
+    # Suppression ponctuation
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    
+    # Suppression chiffres isolés
+    text = re.sub(r'\b\d+\b', ' ', text)
+    
+    # Tokenisation
     words = text.split()
-    return [
+    
+    # Filtrage
+    filtered_words = [
         word for word in words 
         if len(word) > MIN_TOKEN_LENGTH and word not in STOPWORDS_MINIMAL
     ]
+    
+    return filtered_words
 
 def compute_cooccurrences_sliding_window(words, window_size=COOCCURRENCE_WINDOW_SIZE):
     """
     Calcul des cooccurrences par fenêtre glissante
-    
-    Méthodologie :
-    - Fenêtre glissante de taille configurable
-    - Génération de toutes les paires dans chaque fenêtre
-    - Tri alphabétique pour éviter les doublons (A,B) vs (B,A)
-    
-    Args:
-        words (list): Liste des tokens
-        window_size (int): Taille de la fenêtre glissante
-        
-    Returns:
-        defaultdict: Dictionnaire des cooccurrences avec leurs fréquences
     """
     cooccurrences = defaultdict(int)
     
-    # Parcours par fenêtre glissante
     for i in range(len(words) - window_size + 1):
         window = words[i:i + window_size]
         
@@ -102,17 +118,17 @@ def compute_cooccurrences_sliding_window(words, window_size=COOCCURRENCE_WINDOW_
 
 def main():
     """
-    Pipeline principal de calcul des cooccurrences
+    Pipeline principal de calcul des cooccurrences v1.8
     """
-    print("=== Calcul des cooccurrences lexicales v1.1 ===")
+    print("=== Calcul des cooccurrences lexicales v1.8 EXPRESSIONS COMPOSÉES ===")
     print(f"Fenêtre glissante: {COOCCURRENCE_WINDOW_SIZE} mots")
     print(f"Seuil minimal: {COOCCURRENCE_MIN_FREQUENCY} occurrences")
+    print("Expressions composées préservées (zero_knowledge, ethereum_foundation, etc.)")
     
     if not os.path.exists(DATA_DIR):
         print(f"Erreur: Le dossier {DATA_DIR} n'existe pas.")
         return
     
-    # Collection de tous les mots par document
     all_cooccurrences = defaultdict(int)
     file_count = 0
     
@@ -125,9 +141,9 @@ def main():
                 with open(file_path, 'r', encoding='utf-8') as file:
                     text = file.read()
                     
-                    # Pipeline de traitement
-                    cleaned_text = clean_text_advanced(text)
-                    words = tokenize_strict(cleaned_text)
+                    # Pipeline v1.8 harmonisé
+                    cleaned_text = clean_text_v18_cooccurrence(text)
+                    words = tokenize_v18_cooccurrence(cleaned_text)
                     
                     # Calcul des cooccurrences pour ce document
                     doc_cooccurrences = compute_cooccurrences_sliding_window(words)
@@ -169,13 +185,27 @@ def main():
     
     # Export CSV
     df = pd.DataFrame(cooccurrence_data)
-    output_path = os.path.join(CSV_OUTPUT_DIR, 'cooccurrence_pairs.csv')
+    output_path = os.path.join(CSV_OUTPUT_DIR, 'cooccurrence_pairs_v18.csv')
     df.to_csv(output_path, index=False, encoding='utf-8')
     
     print(f"Résultats exportés: {output_path}")
     print(f"\nTop 10 des cooccurrences les plus fréquentes:")
     for item in cooccurrence_data[:10]:
         print(f"  ({item['word1']}, {item['word2']}): {item['cooccurrence_count']}")
+    
+    # Diagnostic expressions composées dans cooccurrences
+    print(f"\n=== DIAGNOSTIC EXPRESSIONS COMPOSÉES DANS COOCCURRENCES ===")
+    compound_cooccurrences = [
+        item for item in cooccurrence_data[:20] 
+        if any('_' in word for word in [item['word1'], item['word2']])
+    ]
+    
+    if compound_cooccurrences:
+        print("✅ Expressions composées détectées dans cooccurrences:")
+        for item in compound_cooccurrences:
+            print(f"  ({item['word1']}, {item['word2']}): {item['cooccurrence_count']}")
+    else:
+        print("⚠️  Aucune expression composée dans le top 20 des cooccurrences")
 
 if __name__ == "__main__":
     main()
