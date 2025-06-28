@@ -3,6 +3,7 @@ run = "Run discursive analysis"
 
 [nix]
 channel = "stable-24_05"
+packages = ["cairo", "ffmpeg-full", "freetype", "ghostscript", "glibcLocales", "gobject-introspection", "gtk3", "pkg-config", "qhull", "tcl", "tk"]
 
 [deployment]
 run = ["sh", "-c", "Run discursive analysis"]
