@@ -118,12 +118,12 @@ def compute_cooccurrences_sliding_window(words, window_size=COOCCURRENCE_WINDOW_
 
 def main():
     """
-    Pipeline principal de calcul des cooccurrences v1.8
+    Pipeline principal de calcul des cooccurrences v1.8 - CORRECTION MAJUSCULES
     """
-    print("=== Calcul des cooccurrences lexicales v1.8 EXPRESSIONS COMPOSÉES ===")
+    print("=== Calcul des cooccurrences lexicales v1.8 CORRECTION MAJUSCULES ===")
     print(f"Fenêtre glissante: {COOCCURRENCE_WINDOW_SIZE} mots")
     print(f"Seuil minimal: {COOCCURRENCE_MIN_FREQUENCY} occurrences")
-    print("Expressions composées préservées (zero_knowledge, ethereum_foundation, etc.)")
+    print("CORRECTIONS v1.8 : preservation ethereum/foundation + expressions composées")
     
     if not os.path.exists(DATA_DIR):
         print(f"Erreur: Le dossier {DATA_DIR} n'existe pas.")
@@ -185,7 +185,7 @@ def main():
     
     # Export CSV
     df = pd.DataFrame(cooccurrence_data)
-    output_path = os.path.join(CSV_OUTPUT_DIR, 'cooccurrence_pairs_v18.csv')
+    output_path = os.path.join(CSV_OUTPUT_DIR, 'cooccurrence_pairs_v18_corrected.csv')
     df.to_csv(output_path, index=False, encoding='utf-8')
     
     print(f"Résultats exportés: {output_path}")
