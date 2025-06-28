@@ -35,7 +35,7 @@ DATA_DIR = CORPUS_TXT_DIR
 
 # === PARAMÈTRES DE NETTOYAGE TEXTUEL ===
 
-# Stopwords enrichie pour analyse STS précise
+# Stopwords enrichie pour analyse STS précise - VERSION CORRIGÉE
 STOPWORDS_ENRICHED = {
     # Articles, pronoms, auxiliaires
     'the', 'a', 'an', 'this', 'that', 'these', 'those', 'my', 'your', 'his', 'her', 'its', 'our', 'their',
@@ -54,10 +54,12 @@ STOPWORDS_ENRICHED = {
     'nonetheless', 'meanwhile', 'likewise', 'similarly', 'conversely', 'instead', 'otherwise', 'accordingly',
     'indeed', 'certainly', 'obviously', 'clearly', 'particularly', 'especially', 'specifically', 'generally',
     
-    # Quantificateurs et intensifieurs (bruit lexical)
+    # Quantificateurs et intensifieurs (bruit lexical) - AJOUTS CRITIQUES
     'all', 'some', 'any', 'many', 'much', 'more', 'most', 'less', 'least', 'few', 'several', 'both',
     'each', 'every', 'either', 'neither', 'one', 'two', 'three', 'first', 'second', 'third', 'last',
     'very', 'quite', 'rather', 'pretty', 'fairly', 'extremely', 'highly', 'really', 'truly', 'actually',
+    'only', 'such', 'not', 'new', 'other', 'there', 'like', 'than', 'way', 'well', 'same', 'just', 'set', 'non',
+    'even', 'out', 'use', 'need', 'support', 'team', 'work', 'time', 'data', 'number', 'users', 'using',
     
     # Connecteurs temporels
     'now', 'then', 'today', 'tomorrow', 'yesterday', 'always', 'never', 'often', 'sometimes', 'usually',
@@ -75,44 +77,131 @@ STOPWORDS_ENRICHED = {
 # Alias pour compatibilité
 STOPWORDS_MINIMAL = STOPWORDS_ENRICHED
 
-# === LEXIQUE STS POUR CODAGE AXIAL ===
+# === LEXIQUE STS POUR CODAGE AXIAL - GRILLE STRUCTURÉE ===
 
-# Catégories sociotechniques émergentes identifiées dans le corpus Ethereum
+# 🧭 Catégories STS (analytico-théoriques)
 STS_LEXICON = {
-    'governance': {
-        'dao', 'governance', 'vote', 'voting', 'proposal', 'community', 'foundation', 'board', 'decision',
-        'consensus', 'stakeholder', 'participant', 'member', 'contributor', 'committee', 'council',
-        'decentralized', 'centralized', 'autonomy', 'autonomous', 'democratic', 'participation'
+    'protocolaire': {
+        'eip', 'eips', 'hardfork', 'fork', 'consensus', 'upgrade', 'protocol', 'specification', 'standard',
+        'improvement', 'proposal', 'ethereum', 'beacon', 'merge', 'pos', 'pow', 'casper', 'finality',
+        'epoch', 'slot', 'validator', 'attestation', 'committee', 'sync', 'checkpoint'
     },
     
-    'technical_infrastructure': {
-        'blockchain', 'block', 'chain', 'network', 'protocol', 'node', 'client', 'server', 'peer',
-        'consensus', 'mining', 'miner', 'validator', 'staking', 'proof', 'algorithm', 'hash', 'merkle',
-        'transaction', 'tx', 'gas', 'fee', 'throughput', 'latency', 'scalability', 'performance'
+    'infrastructurel': {
+        'network', 'scaling', 'layer', 'rollup', 'rollups', 'optimistic', 'arbitrum', 'optimism',
+        'zk', 'zkrollup', 'polygon', 'shard', 'sharding', 'shards', 'execution', 'consensus',
+        'beacon', 'chain', 'block', 'blockchain', 'node', 'nodes', 'client', 'clients', 'peer',
+        'infrastructure', 'architecture', 'latency', 'throughput', 'performance', 'capacity'
     },
     
-    'development_practices': {
-        'development', 'developer', 'coding', 'programming', 'software', 'code', 'implementation',
-        'deployment', 'testing', 'debugging', 'optimization', 'upgrade', 'update', 'version',
-        'github', 'repository', 'commit', 'pull', 'request', 'issue', 'bug', 'feature', 'api'
+    'gouvernance': {
+        'staking', 'stake', 'staker', 'slashing', 'validator', 'validators', 'delegate', 'delegation',
+        'governance', 'dao', 'vote', 'voting', 'proposal', 'decision', 'foundation', 'board',
+        'community', 'coordination', 'consensus', 'stakeholder', 'participant', 'member',
+        'contributor', 'committee', 'council', 'democratic', 'participation', 'funding'
     },
     
-    'security_trust': {
-        'security', 'secure', 'vulnerability', 'attack', 'threat', 'risk', 'audit', 'review',
-        'cryptography', 'encryption', 'signature', 'verification', 'authentication', 'authorization',
-        'trust', 'trustless', 'immutable', 'tamper', 'resistant', 'robust', 'safe', 'safety'
+    'sécurité': {
+        'security', 'vulnerability', 'audit', 'bug', 'exploit', 'attack', 'threat', 'risk',
+        'cryptography', 'encryption', 'signature', 'verification', 'proof', 'zk', 'zero',
+        'knowledge', 'formal', 'verification', 'safety', 'secure', 'trust', 'trustless',
+        'immutable', 'tamper', 'resistant', 'robust', 'authentication', 'authorization'
     },
     
-    'economic_models': {
-        'economic', 'economy', 'token', 'eth', 'ether', 'currency', 'value', 'price', 'market',
-        'trading', 'exchange', 'liquidity', 'supply', 'demand', 'inflation', 'deflation',
-        'incentive', 'reward', 'penalty', 'cost', 'benefit', 'profit', 'investment', 'funding'
+    'usages': {
+        'wallet', 'wallets', 'interface', 'user', 'experience', 'usability', 'accessibility',
+        'dapp', 'dapps', 'application', 'applications', 'service', 'platform', 'adoption',
+        'mainstream', 'enterprise', 'business', 'end', 'frontend', 'backend', 'mobile',
+        'web', 'browser', 'metamask', 'etherscan', 'tools', 'tooling'
     },
     
-    'social_adoption': {
-        'adoption', 'user', 'community', 'ecosystem', 'platform', 'application', 'dapp', 'service',
-        'interface', 'experience', 'usability', 'accessibility', 'education', 'awareness',
-        'mainstream', 'enterprise', 'business', 'industry', 'institution', 'regulation', 'compliance'
+    'recherche': {
+        'research', 'paper', 'academic', 'study', 'analysis', 'theory', 'theoretical',
+        'model', 'modeling', 'simulation', 'experiment', 'formal', 'mathematics',
+        'cryptographic', 'algorithm', 'optimization', 'design', 'specification',
+        'whitepaper', 'yellowpaper', 'documentation', 'technical', 'science'
+    },
+    
+    'développement': {
+        'solidity', 'vyper', 'foundry', 'hardhat', 'truffle', 'remix', 'compiler',
+        'development', 'developer', 'coding', 'programming', 'software', 'code',
+        'implementation', 'deployment', 'testing', 'debugging', 'github', 'repository',
+        'commit', 'pull', 'request', 'issue', 'feature', 'api', 'sdk', 'library',
+        'framework', 'toolchain', 'ide', 'environment'
+    },
+    
+    'defi_finance': {
+        'defi', 'amm', 'mev', 'liquidity', 'flashloan', 'yield', 'farming', 'swap',
+        'uniswap', 'compound', 'aave', 'maker', 'dai', 'usdc', 'token', 'tokens',
+        'erc20', 'erc721', 'nft', 'nfts', 'market', 'trading', 'exchange', 'price',
+        'value', 'economic', 'economy', 'financial', 'monetary', 'currency', 'eth',
+        'ether', 'gas', 'fee', 'fees', 'cost', 'incentive', 'reward'
+    },
+    
+    'discours_vision': {
+        'decentralized', 'decentralization', 'centralized', 'trustless', 'permissionless',
+        'censorship', 'resistant', 'open', 'transparent', 'immutable', 'autonomous',
+        'sovereignty', 'freedom', 'innovation', 'disruption', 'transformation',
+        'future', 'vision', 'philosophy', 'values', 'principles', 'ethos', 'mission',
+        'scalable', 'sustainable', 'inclusive', 'accessible', 'global', 'universal'
+    }
+}
+
+# 🏷️ Catégories indigènes EF (provenant des métadonnées)
+EF_INDIGENOUS_CATEGORIES = {
+    'research_development': {
+        'research', 'development', 'experimental', 'prototype', 'proof', 'concept',
+        'design', 'specification', 'academic', 'paper', 'study', 'analysis'
+    },
+    
+    'updates_upgrades': {
+        'update', 'upgrade', 'fork', 'hardfork', 'merge', 'transition', 'migration',
+        'announcement', 'release', 'version', 'changelog', 'improvement'
+    },
+    
+    'events_community': {
+        'devcon', 'conference', 'hackathon', 'meetup', 'event', 'community',
+        'workshop', 'talk', 'presentation', 'gathering', 'summit'
+    },
+    
+    'security': {
+        'security', 'vulnerability', 'audit', 'bug', 'bounty', 'exploit', 'patch',
+        'fix', 'advisory', 'disclosure', 'responsible'
+    },
+    
+    'staking_merge': {
+        'staking', 'stake', 'validator', 'beacon', 'merge', 'pos', 'proof', 'stake',
+        'transition', 'consensus', 'finality', 'slashing'
+    },
+    
+    'layer2_scaling': {
+        'layer', 'scaling', 'rollup', 'rollups', 'optimistic', 'zk', 'arbitrum',
+        'optimism', 'polygon', 'shard', 'sharding', 'throughput'
+    },
+    
+    'wallet_ux': {
+        'wallet', 'interface', 'user', 'experience', 'usability', 'mobile',
+        'web', 'browser', 'frontend', 'design', 'accessibility'
+    },
+    
+    'ecosystem_adoption': {
+        'ecosystem', 'adoption', 'partnership', 'integration', 'enterprise',
+        'business', 'industry', 'mainstream', 'education', 'outreach'
+    },
+    
+    'governance_coordination': {
+        'governance', 'coordination', 'foundation', 'grant', 'funding', 'team',
+        'organization', 'decision', 'process', 'structure'
+    },
+    
+    'media_philosophy': {
+        'culture', 'philosophy', 'values', 'vision', 'mission', 'ethos',
+        'decentralization', 'freedom', 'innovation', 'future'
+    },
+    
+    'announcements': {
+        'announcement', 'news', 'press', 'release', 'statement', 'official',
+        'communication', 'update', 'information'
     }
 }
 
