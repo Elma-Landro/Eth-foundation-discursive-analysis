@@ -84,7 +84,8 @@ def tokenize_ultra_strict(text):
     PROTECTED_TERMS = {
         'ethereum', 'bitcoin', 'blockchain', 'decentralized', 'protocol',
         'consensus', 'validator', 'staking', 'governance', 'security',
-        'development', 'research', 'infrastructure', 'network', 'client'
+        'development', 'research', 'infrastructure', 'network', 'client',
+        'pyethereum'  # Bibliothèque Python légitime - ne pas supprimer
     }
     
     # Filtrage renforcé contre les troncatures
@@ -272,6 +273,13 @@ def main():
     # Vérification termes Ethereum complets
     ethereum_terms = [(word, freq) for word, freq in word_frequencies.items() if 'ethereum' in word]
     print(f"Famille Ethereum détectée: {ethereum_terms[:5]}")
+    
+    # DIAGNOSTIC SPÉCIFIQUE pour pyethereum (ambigu)
+    if 'pyethereum' in word_frequencies:
+        pyeth_freq = word_frequencies['pyethereum']
+        print(f"⚠️ 'pyethereum' détecté: {pyeth_freq} occurrences")
+        print("   → Peut être légitime (bibliothèque Python) OU artefact de troncature")
+        print("   → Validation manuelle recommandée dans le contexte")
     
     # Statistiques méthodologiques STS
     print(f"\n=== STATISTIQUES MÉTHODOLOGIQUES STS (v1.6) ===")
